@@ -1,0 +1,167 @@
+syntax = "proto3";
+package thor_streamer.types;
+
+option go_package = "thor_streamer/proto;proto";
+
+// -----------------------------------------------------------------------------
+// Account Update Events - Optimized
+// -----------------------------------------------------------------------------
+
+message UpdateAccountEvent {
+  // Fixed length fields first
+  uint64 slot = 1;              // 8 bytes, frequently accessed
+  uint64 lamports = 2;          // 8 bytes, frequently accessed
+  uint64 rent_epoch = 3;        // 8 bytes
+  uint64 write_version = 4;     // 8 bytes
+  bool executable = 5;          // 1 byte
+
+  // Variable length fields after
+  bytes pubkey = 6;             // 32 bytes fixed but proto variable
+  bytes owner = 7;              // 32 bytes fixed but proto variable
+  bytes data = 8;               // variable length
+  optional bytes txn_signature = 9;  // optional, 64 bytes when present
+}
+
+// -----------------------------------------------------------------------------
+// Slot Status Events - Optimized
+// -----------------------------------------------------------------------------
+
+message SlotStatusEvent {
+  // Fixed length fields grouped
+  uint64 slot = 1;              // 8 bytes, frequently accessed
+  uint64 parent = 2;            // 8 bytes
+  SlotStatus status = 3;        // enum (4 bytes)
+}
+
+enum SlotStatus {
+  PROCESSED = 0;  // Most common first
+  CONFIRMED = 1;
+  ROOTED = 2;
+}
+
+// -----------------------------------------------------------------------------
+// Transaction Message Structures - Optimized
+// -----------------------------------------------------------------------------
+
+message MessageHeader {
+  // Group small fixed-size fields together
+  uint32 num_required_signatures = 1;
+  uint32 num_readonly_signed_accounts = 2;
+  uint32 num_readonly_unsigned_accounts = 3;
+}
+
+message CompiledInstruction {
+  uint32 program_id_index = 1;
+  bytes data = 2;              // Variable length after fixed
+  repeated uint32 accounts = 3 [packed=true]; // Use packed for better encoding
+}
+
+message LoadedAddresses {
+  repeated bytes writable = 1;
+  repeated bytes readonly = 2;
+}
+
+message MessageAddressTableLookup {
+  bytes account_key = 1;        // 32 bytes
+  bytes writable_indexes = 2;   // 32 bytes
+  bytes readonly_indexes = 3;   // 32 bytes
+}
+
+// Unified Message structure that handles both Legacy and v0
+message Message {
+  uint32 version = 1;                     // 0 for legacy, 1 for v0
+  MessageHeader header = 2;
+  bytes recent_block_hash = 3;            // 32 bytes
+  repeated bytes account_keys = 4;        // Array of 32 byte keys
+  repeated CompiledInstruction instructions = 5;
+  repeated MessageAddressTableLookup address_table_lookups = 6;  // Only used for v0
+  LoadedAddresses loaded_addresses = 7;                          // Only used for v0
+  repeated bool is_writable = 8 [packed=true];                  // Account write permissions
+}
+
+message SanitizedTransaction {
+  Message message = 1;
+  bytes message_hash = 2;               // 32 bytes
+  repeated bytes signatures = 3;        // Array of 64 byte signatures
+  bool is_simple_vote_transaction = 4;
+}
+
+message TransactionEvent {
+  uint64 slot = 1;
+  bytes signature = 2;                  // 64 bytes
+  uint64 index = 3;
+  bool is_vote = 4;
+  SanitizedTransaction transaction = 5;
+  TransactionStatusMeta transaction_status_meta = 6;
+}
+
+// -----------------------------------------------------------------------------
+// Transaction Details - Optimized
+// -----------------------------------------------------------------------------
+
+message InnerInstruction {
+  CompiledInstruction instruction = 1;
+  optional uint32 stack_height = 2;
+}
+
+message InnerInstructions {
+  uint32 index = 1;
+  repeated InnerInstruction instructions = 2;
+}
+
+message UiTokenAmount {
+  string amount = 1;                // Most commonly used first
+  uint32 decimals = 2;
+  string ui_amount_string = 3;
+  double ui_amount = 4;
+}
+
+message TransactionTokenBalance {
+  uint32 account_index = 1;
+  string mint = 2;
+  UiTokenAmount ui_token_amount = 3;
+  string owner = 4;
+}
+
+message Reward {
+  string pubkey = 1;
+  int64 lamports = 2;
+  uint64 post_balance = 3;
+  int32 reward_type = 4;
+  uint32 commission = 5;
+}
+
+message TransactionStatusMeta {
+  // Most frequently accessed fields first
+  bool is_status_err = 1;
+  uint64 fee = 2;
+  repeated uint64 pre_balances = 3 [packed=true];
+  repeated uint64 post_balances = 4 [packed=true];
+
+  // Larger and optional fields after
+  repeated InnerInstructions inner_instructions = 5;
+  repeated string log_messages = 6;
+  repeated TransactionTokenBalance pre_token_balances = 7;
+  repeated TransactionTokenBalance post_token_balances = 8;
+  repeated Reward rewards = 9;
+  string error_info = 10;
+}
+
+enum StreamType {
+  STREAM_TYPE_UNSPECIFIED = 0;
+  STREAM_TYPE_FILTERED = 1;
+  STREAM_TYPE_WALLET = 2;
+}
+
+message TransactionEventWrapper {
+  StreamType stream_type = 1;
+  TransactionEvent transaction = 2;
+}
+
+message MessageWrapper {
+  oneof event_message {
+    UpdateAccountEvent account = 1;
+    SlotStatusEvent slot = 2;
+    TransactionEventWrapper transaction = 3;
+  }
+}

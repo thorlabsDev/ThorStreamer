@@ -1,0 +1,13 @@
+{
+  "server_address": "103.106.59.87:50051",
+  "auth_token": "1234",
+  "program_filters": [
+    "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+  ],
+  "log_directory": "logs",
+  "include_vote_transactions": false,
+  "include_failed_transactions": false,
+  "max_retries": 5,
+  "signature_log_file": "./examples/logs/signatures.log",
+  "channel_buffer_size": 100
+}

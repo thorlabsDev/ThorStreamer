@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package publisher;
+
+import "events.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "thor_streamer/proto";
+
+service EventPublisher {
+  rpc SubscribeToTransactions(google.protobuf.Empty) returns (stream thor_streamer.types.TransactionEvent) {}
+  rpc SubscribeToAccountUpdates(google.protobuf.Empty) returns (stream thor_streamer.types.UpdateAccountEvent) {}
+  rpc SubscribeToSlotStatus(google.protobuf.Empty) returns (stream thor_streamer.types.SlotStatusEvent) {}
+  rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream thor_streamer.types.TransactionEvent) {}
+}
+
+message SubscribeWalletRequest {
+  repeated string WalletAddress = 1;  // Array of Base58 encoded wallet addresses, max 10
+}
