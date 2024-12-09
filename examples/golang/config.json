@@ -1,9 +1,8 @@
 {
-  "server_address": "103.106.59.87:50051",
-  "auth_token": "1234",
-  "program_filters": [
-    "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
-  ],
+  "server_address": "<URL>:<PORT>",
+  "auth_token": "<TOKEN>",
+  "program_filters": ["6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"],
+  "filter_names": ["tx_filter"],
   "log_directory": "logs",
   "include_vote_transactions": false,
   "include_failed_transactions": false,
