@@ -1,4 +1,5 @@
 syntax = "proto3";
+
 package thor_streamer.types;
 
 option go_package = "thor_streamer/proto;proto";
@@ -79,6 +80,7 @@ message Message {
   repeated bool is_writable = 8 [packed=true];                  // Account write permissions
 }
 
+
 message SanitizedTransaction {
   Message message = 1;
   bytes message_hash = 2;               // 32 bytes
@@ -110,10 +112,10 @@ message InnerInstructions {
 }
 
 message UiTokenAmount {
-  string amount = 1;                // Most commonly used first
+  double ui_amount = 1;
   uint32 decimals = 2;
-  string ui_amount_string = 3;
-  double ui_amount = 4;
+  string amount = 3;
+  string ui_amount_string = 4;
 }
 
 message TransactionTokenBalance {
