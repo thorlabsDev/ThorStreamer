@@ -1,12 +1,12 @@
-import * as grpc from "@grpc/grpc-js";
+Pimport * as grpc from "@grpc/grpc-js";
 import { publisher } from "../../protos/publisher";
 import { thor_streamer } from "../../protos/events";
 import * as goog from "../../protos/google/protobuf/empty";
 import base58 from "bs58";
 // Load configuration
 const config = {
-  serverAddress: "",
-  authToken: "",
+  serverAddress: "ENDPOINT",
+  authToken: "AUTH_TOKEN",
 };
 
 const client = new publisher.EventPublisherClient(
