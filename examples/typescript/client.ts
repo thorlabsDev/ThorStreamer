@@ -5,8 +5,8 @@ import * as goog from "../../protos/google/protobuf/empty";
 import base58 from "bs58";
 // Load configuration
 const config = {
-  serverAddress: "173.231.41.74:50051",
-  authToken: "capicua",
+  serverAddress: "",
+  authToken: "",
 };
 
 const client = new publisher.EventPublisherClient(
