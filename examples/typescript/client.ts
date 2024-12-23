@@ -1,16 +1,15 @@
 import * as grpc from "@grpc/grpc-js";
-import { EventPublisherClient } from "./protos/publisher_grpc_pb";
-import { TransactionEvent, MessageWrapper, Message } from "./protos/events_pb";
-import { Empty } from "google-protobuf/google/protobuf/empty_pb";
+import { publisher } from "../../protos/publisher";
+import { thor_streamer } from "../../protos/events";
+import * as goog from "../../protos/google/protobuf/empty";
 import base58 from "bs58";
-
 // Load configuration
 const config = {
-  serverAddress: "ENDPOINT",
-  authToken: "AUTH_TOKEN",
+  serverAddress: "173.231.41.74:50051",
+  authToken: "capicua",
 };
 
-const client = new EventPublisherClient(
+const client = new publisher.EventPublisherClient(
   config.serverAddress,
   grpc.credentials.createInsecure()
 );
@@ -18,26 +17,25 @@ const client = new EventPublisherClient(
 const metadata = new grpc.Metadata();
 metadata.add("authorization", config.authToken);
 
-const emptyRequest = new Empty();
+const emptyRequest = new goog.google.protobuf.Empty;
 
 console.log(`🔍 Starting Transaction Debugger on ${config.serverAddress}`);
 console.log("--------------------------------");
 
-const transactionStream = client.subscribeToTransactions(
-  emptyRequest,
-  metadata
+const transactionStream = client.SubscribeToTransactions(
+  emptyRequest, metadata
 );
 
 transactionStream.on("data", (data: any) => {
   try {
     const binaryData = data.u[0];
-    const msgWrapper = MessageWrapper.deserializeBinary(binaryData);
+    const msgWrapper = thor_streamer.types.MessageWrapper.deserializeBinary(binaryData);
 
-    const eventMessage = msgWrapper.getEventMessageCase();
-    if (eventMessage === MessageWrapper.EventMessageCase.TRANSACTION) {
-      const txWrapper = msgWrapper.getTransaction();
-      if (txWrapper && txWrapper.getTransaction()) {
-        const transaction = txWrapper.getTransaction();
+    const eventMessage = msgWrapper.event_message;
+    if (eventMessage === "transaction") {
+      const txWrapper = msgWrapper.transaction;
+      if (txWrapper && txWrapper.transaction) {
+        const transaction = txWrapper.transaction;
         debugTransaction(transaction!);
       } else {
         console.log("No actual transaction found in TransactionEventWrapper");
@@ -58,33 +56,34 @@ transactionStream.on("end", () => {
   console.log("Transaction stream ended.");
 });
 
-function debugTransaction(tx: TransactionEvent) {
+function debugTransaction(tx: thor_streamer.types.TransactionEvent) {
   console.log("\n🔍 Transaction Debug Information:");
-  console.log(`├─ Signature: ${base58.encode(tx.getSignature_asU8())}`);
-  console.log(`├─ Slot: ${tx.getSlot()}`);
+  console.log(`├─ Signature: ${base58.encode(tx.signature)}`);
+  console.log(`├─ Slot: ${tx.slot}`);
 
-  const transaction = tx.getTransaction();
+  const transaction = tx.transaction;
 
   if (!transaction) {
     console.log("├─ ⚠️  Transaction is nil!");
     return;
   }
 
-  const message = transaction.getMessage();
+  const message = transaction.message;
   if (!message) {
     console.log("├─ ⚠️  Message is nil!");
     return;
   }
 
   console.log(
-    `├─ Version: ${message.getVersion()} (${getVersionString(
-      message.getVersion()
+    `├─ Version: ${message.version} (${getVersionString(
+      message.version
     )})`
   );
   debugHeader(message);
   debugAccountKeys(message);
   debugBlockhash(message);
   debugInstructions(message);
+
 }
 
 function getVersionString(version: number): string {
@@ -98,26 +97,26 @@ function getVersionString(version: number): string {
   }
 }
 
-function debugHeader(msg: any) {
+function debugHeader(msg: thor_streamer.types.Message) {
   console.log("├─ Header:");
-  const header = msg.getHeader();
+  const header = msg.header
   if (!header) {
     console.log("│  └─ ⚠️  Header is nil!");
     return;
   }
   console.log(
-    `│  ├─ NumRequiredSignatures: ${header.getNumRequiredSignatures()}`
+    `│  ├─ NumRequiredSignatures: ${header.num_required_signatures}`
   );
   console.log(
-    `│  ├─ NumReadonlySignedAccounts: ${header.getNumReadonlySignedAccounts()}`
+    `│  ├─ NumReadonlySignedAccounts: ${header.num_readonly_signed_accounts}`
   );
   console.log(
-    `│  └─ NumReadonlyUnsignedAccounts: ${header.getNumReadonlyUnsignedAccounts()}`
+    `│  └─ NumReadonlyUnsignedAccounts: ${header.num_readonly_unsigned_accounts}`
   );
 }
 
-function debugAccountKeys(msg: Message) {
-  const accountKeys = msg.getAccountKeysList_asU8();
+function debugAccountKeys(msg: thor_streamer.types.Message) {
+  const accountKeys = msg.account_keys;
   console.log(`├─ Account Keys (${accountKeys.length}):`);
   if (accountKeys.length === 0) {
     console.log("│  └─ ⚠️  No account keys!");
@@ -132,8 +131,8 @@ function debugAccountKeys(msg: Message) {
   }
 }
 
-function debugBlockhash(msg: any) {
-  const blockhash = msg.getRecentBlockHash_asU8();
+function debugBlockhash(msg: thor_streamer.types.Message) {
+  const blockhash = msg.recent_block_hash;
   console.log("├─ Recent Blockhash:");
   if (blockhash.length === 0) {
     console.log("│  └─ ⚠️  Blockhash is empty!");
@@ -142,19 +141,19 @@ function debugBlockhash(msg: any) {
   console.log(`│  └─ ${base58.encode(blockhash)}`);
 }
 
-function debugInstructions(msg: any) {
-  const instructions = msg.getInstructionsList();
+function debugInstructions(msg: thor_streamer.types.Message) {
+  const instructions = msg.instructions;
   console.log(`─ Instructions (${instructions.length}):`);
   if (instructions.length === 0) {
     console.log("│  └─ ⚠️  No instructions!");
     return;
   }
 
-  instructions.slice(0, 3).forEach((ix: any, i: number) => {
+  instructions.slice(0, 3).forEach((ix: thor_streamer.types.CompiledInstruction, i: number) => {
     console.log(`│  ├─ Instruction ${i}:`);
-    console.log(`│  │  ├─ Program ID Index: ${ix.getProgramIdIndex()}`);
-    console.log(`│  │  ├─ Account Indexes: ${ix.getAccountsList().length}`);
-    console.log(`│  │  └─ Data Length: ${ix.getData_asU8().length} bytes`);
+    console.log(`│  │  ├─ Program ID Index: ${ix.program_id_index}`);
+    console.log(`│  │  ├─ Account Indexes: ${ix.accounts.length}`);
+    console.log(`│  │  └─ Data Length: ${ix.data.length} bytes`);
   });
   if (instructions.length > 3) {
     console.log(`│  └─ ... and ${instructions.length - 3} more instructions`);
