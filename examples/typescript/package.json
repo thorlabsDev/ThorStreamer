@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@grpc/grpc-js": "^1.12.4",
+    "@grpc/grpc-js": "^1.12.5",
     "@grpc/proto-loader": "^0.7.13",
     "bs58": "^6.0.0",
     "google-protobuf": "^3.21.4",
@@ -8,6 +8,14 @@
     "grpc-tools": "^1.12.4"
   },
   "devDependencies": {
-    "@types/google-protobuf": "^3.15.12"
+    "@types/google-protobuf": "^3.15.12",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  },
+  "scripts": {
+    "generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./generated/proto --grpc_out=grpc_js:./generated/proto --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` --ts_out=./generated/proto -I ./proto ./proto/*.proto",
+    "start": "npm run generate && ts-node --project tsconfig.json client.ts",
+    "build": "tsc",
+    "dev": "ts-node-dev --project tsconfig.json --respawn client.ts"
   }
 }

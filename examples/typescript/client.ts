@@ -1,7 +1,8 @@
-Pimport * as grpc from "@grpc/grpc-js";
-import { publisher } from "../../protos/publisher";
-import { thor_streamer } from "../../protos/events";
-import * as goog from "../../protos/google/protobuf/empty";
+import * as grpc from "@grpc/grpc-js";
+import { publisher } from "./proto/publisher";
+import { thor_streamer } from "./proto/events";
+import * as goog from "./proto/google/protobuf/empty";
+// @ts-ignore
 import base58 from "bs58";
 // Load configuration
 const config = {
@@ -17,7 +18,7 @@ const client = new publisher.EventPublisherClient(
 const metadata = new grpc.Metadata();
 metadata.add("authorization", config.authToken);
 
-const emptyRequest = new goog.google.protobuf.Empty;
+const emptyRequest = new goog.google.protobuf.Empty();
 
 console.log(`🔍 Starting Transaction Debugger on ${config.serverAddress}`);
 console.log("--------------------------------");

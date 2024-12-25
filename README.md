@@ -318,7 +318,7 @@ async fn process_transaction(tx: TransactionEvent) {
 ### TypeScript Example
 ```typescript
 import * as grpc from '@grpc/grpc-js';
-import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
+import { Empty } from 'proto-protobuf/proto/protobuf/empty_pb';
 import { EventPublisherClient } from './proto/publisher_grpc_pb';
 import { TransactionEvent } from './proto/publisher_pb';
 
