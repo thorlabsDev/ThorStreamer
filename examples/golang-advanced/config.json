@@ -1,0 +1,13 @@
+{
+  "server_address": "yourThorStreamerAddress:Port",
+  "auth_token": "yourAuthToken",
+  "program_filters": [
+    "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K"
+  ],
+  "log_directory": "logs",
+  "include_vote_transactions": false,
+  "include_failed_transactions": false,
+  "max_retries": 5,
+  "signature_log_file": "./logs/signatures.log",
+  "channel_buffer_size": 100
+}
