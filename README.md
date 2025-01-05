@@ -64,20 +64,22 @@ message SubscribeWalletRequest {
   - Track DeFi protocol transactions
   - Market making and trading strategies
     
-| Program Name                | Program ID                                    |
-|-----------------------------|-----------------------------------------------|
-| Magic Eden V2               | `M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K` |
-| Tensor Swap                 | `TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN` |
-| Raydium Liquidity Pool V4   | `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8`|
-| Raydium Raydium CPMM        | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C`|
-| OpenBook                    | `srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX`|
-| Orca                        | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` |
-| Fluxbeam Program            | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X`|
-| Meteora Pools Program       | `Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB`|
-| Pump.fun                    | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` |
-| Pump.fun Fee Account        | `CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM` |
-| Moonshot                    | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
-| game.com                    | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
+| Program Name | Program ID |
+|---------|---|
+| Magic Eden V2 | `M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K` |
+| Tensor Swap | `TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN` |
+| Raydium CLMM | `CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK` |
+| Raydium Liquidity Pool V4 | `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8` |
+| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` |
+| OpenBook | `srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX` |
+| Orca | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` |
+| Meteora DLMM | `LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo` |
+| Meteora Pools | `Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB` |
+| Lifinity V2 | `2wT8Yq49kHgDzXuPxZSaeLaH1qbmGXtEyPy64bL7aD3c` |
+| Pump.fun | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` |
+| Pump.fun Fee Account | `CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM` |
+| Moonshot | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
+| game.com | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
 
 
 *Note: Feel free to ask for any missing or requested program IDs.*
