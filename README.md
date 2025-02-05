@@ -78,9 +78,10 @@ message SubscribeWalletRequest {
 | Lifinity V2 | `2wT8Yq49kHgDzXuPxZSaeLaH1qbmGXtEyPy64bL7aD3c` |
 | Pump.fun | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` |
 | Pump.fun Fee Account | `CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM` |
+| Pump.fun: Raydium Migration | `39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg` |
 | Moonshot | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
 | game.com | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
-
+| Fluxbeam | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X` |
 
 *Note: Feel free to ask for any missing or requested program IDs.*
 
