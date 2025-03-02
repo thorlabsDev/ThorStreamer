@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package thor_streamer.types;
+
+option go_package = "thor_streamer/proto;proto";
+
+// Local Empty is optional; you can remove it if you're not using it:
+message Empty {}
+
+// -----------------------------------------------------------------------------
+// Account Update Events - Optimized
+// -----------------------------------------------------------------------------
+
+message UpdateAccountEvent {
+  uint64 slot = 1;
+  uint64 lamports = 2;
+  uint64 rent_epoch = 3;
+  uint64 write_version = 4;
+  bool executable = 5;
+
+  bytes pubkey = 6;
+  bytes owner = 7;
+  bytes data = 8;
+  optional bytes txn_signature = 9;
+}
+
+message SlotStatusEvent {
+  uint64 slot = 1;
+  uint64 parent = 2;
+  SlotStatus status = 3;
+  bytes block_hash = 4;
+  uint64 block_height = 5;
+}
+
+enum SlotStatus {
+  PROCESSED = 0;
+  CONFIRMED = 1;
+  ROOTED = 2;
+}
+
+message MessageHeader {
+  uint32 num_required_signatures = 1;
+  uint32 num_readonly_signed_accounts = 2;
+  uint32 num_readonly_unsigned_accounts = 3;
+}
+
+message CompiledInstruction {
+  uint32 program_id_index = 1;
+  bytes data = 2;
+  repeated uint32 accounts = 3 [packed=true];
+}
+
+message LoadedAddresses {
+  repeated bytes writable = 1;
+  repeated bytes readonly = 2;
+}
+
+message MessageAddressTableLookup {
+  bytes account_key = 1;
+  bytes writable_indexes = 2;
+  bytes readonly_indexes = 3;
+}
+
+message Message {
+  uint32 version = 1;
+  MessageHeader header = 2;
+  bytes recent_block_hash = 3;
+  repeated bytes account_keys = 4;
+  repeated CompiledInstruction instructions = 5;
+  repeated MessageAddressTableLookup address_table_lookups = 6;
+  LoadedAddresses loaded_addresses = 7;
+  repeated bool is_writable = 8 [packed=true];
+}
+
+message SanitizedTransaction {
+  Message message = 1;
+  bytes message_hash = 2;
+  repeated bytes signatures = 3;
+  bool is_simple_vote_transaction = 4;
+}
+
+message TransactionEvent {
+  uint64 slot = 1;
+  bytes signature = 2;
+  uint64 index = 3;
+  bool is_vote = 4;
+  SanitizedTransaction transaction = 5;
+  TransactionStatusMeta transaction_status_meta = 6;
+}
+
+message InnerInstruction {
+  CompiledInstruction instruction = 1;
+  optional uint32 stack_height = 2;
+}
+
+message InnerInstructions {
+  uint32 index = 1;
+  repeated InnerInstruction instructions = 2;
+}
+
+message UiTokenAmount {
+  double ui_amount = 1;
+  uint32 decimals = 2;
+  string amount = 3;
+  string ui_amount_string = 4;
+}
+
+message TransactionTokenBalance {
+  uint32 account_index = 1;
+  string mint = 2;
+  UiTokenAmount ui_token_amount = 3;
+  string owner = 4;
+}
+
+message Reward {
+  string pubkey = 1;
+  int64 lamports = 2;
+  uint64 post_balance = 3;
+  int32 reward_type = 4;
+  uint32 commission = 5;
+}
+
+message TransactionStatusMeta {
+  bool is_status_err = 1;
+  uint64 fee = 2;
+  repeated uint64 pre_balances = 3 [packed=true];
+  repeated uint64 post_balances = 4 [packed=true];
+  repeated InnerInstructions inner_instructions = 5;
+  repeated string log_messages = 6;
+  repeated TransactionTokenBalance pre_token_balances = 7;
+  repeated TransactionTokenBalance post_token_balances = 8;
+  repeated Reward rewards = 9;
+  string error_info = 10;
+}
+
+enum StreamType {
+  STREAM_TYPE_UNSPECIFIED = 0;
+  STREAM_TYPE_FILTERED = 1;
+  STREAM_TYPE_WALLET = 2;
+}
+
+message TransactionEventWrapper {
+  StreamType stream_type = 1;
+  TransactionEvent transaction = 2;
+}
+
+message MessageWrapper {
+  oneof event_message {
+    UpdateAccountEvent account = 1;
+    SlotStatusEvent slot = 2;
+    TransactionEventWrapper transaction = 3;
+  }
+}
