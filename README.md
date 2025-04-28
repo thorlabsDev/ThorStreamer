@@ -82,6 +82,9 @@ message SubscribeWalletRequest {
 | Moonshot | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
 | game.com | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
 | Fluxbeam | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X` |
+| Tensor cNFT | `TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp` |
+| Pump.fun AMM | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` |
+| Raydium Launchpad | `LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj` |
 
 *Note: Feel free to ask for any missing or requested program IDs.*
 
