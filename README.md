@@ -26,180 +26,264 @@ ThorStreamer is a high-performance gRPC service providing real-time access to So
 - SSL/TLS encryption
 - Token-based authentication
 - Support for program-specific filters
+- Unified streaming interface with message wrapping
 
 ## Protocol Definition
+
 We provide `.proto` files that you can use to generate client libraries in the programming language of your choice. The `.proto` files define the structure of the data and the services that your client will interact with. You can use these files to generate client code for various languages using the respective gRPC tools.
 
 To use the `.proto` files, follow the instructions provided in the gRPC documentation for your specific language to generate the necessary client libraries.
 
 ### Service Definition
+
+The ThorStreamer service provides two main interfaces:
+
+#### ThorStreamer Service (events.proto)
+```protobuf
+service ThorStreamer {
+  rpc StreamUpdates(Empty) returns (stream MessageWrapper);
+}
+```
+
+#### EventPublisher Service (publisher.proto)
 ```protobuf
 service EventPublisher {
-    // Stream all transactions matching configured program filters
-    rpc SubscribeToTransactions(google.protobuf.Empty) returns (stream TransactionEvent) {}
-    
-    // Stream account data changes
-    rpc SubscribeToAccountUpdates(google.protobuf.Empty) returns (stream UpdateAccountEvent) {}
-    
-    // Stream slot status updates
-    rpc SubscribeToSlotStatus(google.protobuf.Empty) returns (stream SlotStatusEvent) {}
-    
-    // Stream transactions for specific wallets
-    rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream TransactionEvent) {}
+  rpc SubscribeToTransactions(google.protobuf.Empty) returns (stream StreamResponse) {}
+  rpc SubscribeToSlotStatus(google.protobuf.Empty) returns (stream StreamResponse) {}
+  rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream StreamResponse) {}
+  rpc SubscribeToAccountUpdates(SubscribeAccountsRequest) returns (stream StreamResponse) {}
 }
 
 message SubscribeWalletRequest {
-    repeated string WalletAddress = 1;  // Array of Base58 encoded wallet addresses, max 10
+  repeated string wallet_address = 1; // Array of Base58 encoded wallet addresses, max 10
+}
+
+message SubscribeAccountsRequest {
+  repeated string account_address = 1;
 }
 ```
 
 ## Service Methods
 
-### 1. SubscribeToTransactions
-- Purpose: Stream real-time transactions matching configured program filters
-- Input: None (Empty message)
-- Output: Stream of TransactionEvent messages
-- Use cases:
-  - Monitor specific program interactions
-  - Track DeFi protocol transactions
-  - Market making and trading strategies
-    
+### ThorStreamer Service
+
+#### StreamUpdates
+- **Purpose**: Unified stream for all event types (transactions, account updates, slot status)
+- **Input**: Empty message
+- **Output**: Stream of MessageWrapper messages containing different event types
+- **Performance Requirements**: High-throughput stream requiring powerful client infrastructure
+- **Use cases**: Single connection for all data types with message type identification
+- **⚠️ Warning**: This is an extremely high-volume stream that requires robust server infrastructure to process effectively
+
+### EventPublisher Service
+
+#### 1. SubscribeToTransactions
+- **Purpose**: Stream real-time transactions matching configured program filters
+- **Input**: None (Empty message)
+- **Output**: Stream of StreamResponse messages containing transaction data
+- **Use cases**:
+    - Monitor specific program interactions
+    - Track DeFi protocol transactions
+    - Market making and trading strategies
+
 | Program Name | Program ID |
 |---------|---|
+| Program Name | Program ID |
+|---------|---|
+| Fluxbeam | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X` |
+| game.com | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
+| Lifinity V2 | `2wT8Yq49kHgDzXuPxZSaeLaH1qbmGXtEyPy64bL7aD3c` |
 | Magic Eden V2 | `M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K` |
-| Tensor Swap | `TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN` |
-| Raydium CLMM | `CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK` |
-| Raydium Liquidity Pool V4 | `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8` |
-| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` |
-| OpenBook | `srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX` |
-| Orca | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` |
+| Meteora DAMM v2 | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` |
 | Meteora DLMM | `LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo` |
 | Meteora Pools | `Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB` |
-| Lifinity V2 | `2wT8Yq49kHgDzXuPxZSaeLaH1qbmGXtEyPy64bL7aD3c` |
+| Moonshot | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
+| OpenBook | `srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX` |
+| Orca | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` |
 | Pump.fun | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` |
+| Pump.fun AMM | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` |
 | Pump.fun Fee Account | `CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM` |
 | Pump.fun: Raydium Migration | `39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg` |
-| Moonshot | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
-| game.com | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
-| Fluxbeam | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X` |
+| Raydium CLMM | `CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK` |
+| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` |
+| Raydium Launchpad | `LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj` |
+| Raydium Launchpad Authority | `WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh` |
+| Raydium Liquidity Pool V4 | `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8` |
+| SolFi | `SoLFiHG9TfgtdUXUjWAxi3LtvYuFyDLVhBWxdMZxyCe` |
+| Tensor cNFT | `TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp` |
+| Tensor Swap | `TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN` |
+
 
 *Note: Feel free to ask for any missing or requested program IDs.*
 
+#### 2. SubscribeToAccountUpdates
+- **Purpose**: Stream account data changes in real-time
+- **Input**: SubscribeAccountsRequest with array of account addresses
+- **Output**: Stream of StreamResponse messages containing account update data
+- **Use cases**:
+    - Monitor token account balances
+    - Track program account state changes
+    - Real-time portfolio tracking
 
-### 2. SubscribeToAccountUpdates (TO-DO)
-- Purpose: Stream account data changes in real-time
-*(In progress)*
+#### 3. SubscribeToSlotStatus
+- **Purpose**: Monitor Solana slot progression
+- **Input**: None (Empty message)
+- **Output**: Stream of StreamResponse messages containing slot status data
+- **Use cases**:
+    - Transaction confirmation tracking
+    - Block finality monitoring
+    - Network health checks
 
-### 3. SubscribeToSlotStatus
-- Purpose: Monitor Solana slot progression
-- Input: None (Empty message)
-- Output: Stream of SlotStatusEvent messages
-- Use cases:
-  - Transaction confirmation tracking
-  - Block finality monitoring
-  - Network health checks
-
-### 4. SubscribeToWalletTransactions
-- Purpose: Stream transactions for specific wallet addresses
-- Input: SubscribeWalletRequest with array of wallet addresses
-- Output: Stream of TransactionEvent messages
-- Limitations: Maximum 10 wallet addresses per subscription
-- Use cases:
-  - Portfolio tracking
-  - User activity monitoring
-  - Wallet analytics
+#### 4. SubscribeToWalletTransactions
+- **Purpose**: Stream transactions for specific wallet addresses
+- **Input**: SubscribeWalletRequest with array of wallet addresses
+- **Output**: Stream of StreamResponse messages containing transaction data
+- **Limitations**: Maximum 10 wallet addresses per subscription
+- **Use cases**:
+    - Portfolio tracking
+    - User activity monitoring
+    - Wallet analytics
 
 ## Message Structures
 
 ### Core Message Types
 
-#### 1. TransactionEvent
+#### 1. MessageWrapper (Unified Stream)
+```protobuf
+message MessageWrapper {
+  oneof event_message {
+    SubscribeUpdateAccountInfo account_update = 1;
+    SlotStatusEvent slot = 2;
+    TransactionEventWrapper transaction = 3;
+  }
+}
+
+message TransactionEventWrapper {
+  StreamType stream_type = 1;
+  TransactionEvent transaction = 2;
+}
+
+enum StreamType {
+  STREAM_TYPE_UNSPECIFIED = 0;
+  STREAM_TYPE_FILTERED = 1;
+  STREAM_TYPE_WALLET = 2;
+  STREAM_TYPE_ACCOUNT = 3;
+}
+```
+
+#### 2. TransactionEvent
 ```protobuf
 message TransactionEvent {
-    uint64 slot = 1;                           // Slot number when transaction was processed
-    bytes signature = 2;                       // Transaction signature (64 bytes)
-    uint64 index = 3;                         // Transaction index within the block
-    bool is_vote = 4;                         // Indicates if this is a vote transaction
-    SanitizedTransaction transaction = 5;      // Full transaction details
-    TransactionStatusMeta transaction_status_meta = 6;  // Transaction status and metadata
+  uint64 slot = 1;                           // Slot number when transaction was processed
+  bytes signature = 2;                       // Transaction signature (64 bytes)
+  uint64 index = 3;                         // Transaction index within the block
+  bool is_vote = 4;                         // Indicates if this is a vote transaction
+  SanitizedTransaction transaction = 5;      // Full transaction details
+  TransactionStatusMeta transaction_status_meta = 6;  // Transaction status and metadata
 }
 
 message SanitizedTransaction {
-    SanitizedMessage message = 1;              // Transaction message content
-    bytes message_hash = 2;                    // Hash of the message (32 bytes)
-    repeated bytes signatures = 3;             // Array of transaction signatures
-    bool is_simple_vote_transaction = 4;       // Simple vote transaction indicator
+  Message message = 1;                       // Transaction message content
+  bytes message_hash = 2;                    // Hash of the message (32 bytes)
+  repeated bytes signatures = 3;             // Array of transaction signatures
+  bool is_simple_vote_transaction = 4;       // Simple vote transaction indicator
 }
 
 message TransactionStatusMeta {
-    bool is_status_err = 1;                    // Transaction success/failure flag
-    uint64 fee = 2;                           // Transaction fee in lamports
-    repeated uint64 pre_balances = 3;         // Account balances before transaction
-    repeated uint64 post_balances = 4;        // Account balances after transaction
-    repeated InnerInstructions inner_instructions = 5;  // CPI instruction details
-    repeated string log_messages = 6;          // Program log messages
-    repeated TransactionTokenBalance pre_token_balances = 7;   // Token balances before tx
-    repeated TransactionTokenBalance post_token_balances = 8;  // Token balances after tx
-    repeated Reward rewards = 9;               // Transaction rewards
-    string error_info = 10;                    // Error details if transaction failed
+  bool is_status_err = 1;                    // Transaction success/failure flag
+  uint64 fee = 2;                           // Transaction fee in lamports
+  repeated uint64 pre_balances = 3;         // Account balances before transaction
+  repeated uint64 post_balances = 4;        // Account balances after transaction
+  repeated InnerInstructions inner_instructions = 5;  // CPI instruction details
+  repeated string log_messages = 6;          // Program log messages
+  repeated TransactionTokenBalance pre_token_balances = 7;   // Token balances before tx
+  repeated TransactionTokenBalance post_token_balances = 8;  // Token balances after tx
+  repeated Reward rewards = 9;               // Transaction rewards
+  string error_info = 10;                    // Error details if transaction failed
 }
 ```
 
-#### 2. UpdateAccountEvent
+#### 3. SubscribeUpdateAccountInfo
 ```protobuf
-under development
+message SubscribeUpdateAccountInfo {
+  bytes pubkey = 1;                         // Account public key
+  uint64 lamports = 2;                      // Account balance in lamports
+  bytes owner = 3;                          // Account owner program
+  bool executable = 4;                      // Whether account is executable
+  uint64 rent_epoch = 5;                    // Rent epoch
+  bytes data = 6;                           // Account data
+  uint64 write_version = 7;                 // Write version
+  optional bytes txn_signature = 8;         // Transaction signature that caused update
+  optional SlotStatus slot = 9;             // Slot information
+}
 ```
 
-#### 3. SlotStatusEvent
+#### 4. SlotStatusEvent
 ```protobuf
 message SlotStatusEvent {
-    uint64 slot = 1;                          // Slot number
-    uint64 parent = 2;                        // Parent slot number
-    SlotStatus status = 3;                    // Current slot status
-}
-
-enum SlotStatus {
-    PROCESSED = 0;    // Slot has been processed
-    CONFIRMED = 1;    // Slot has been confirmed
-    ROOTED = 2;       // Slot has been rooted (finalized)
+  uint64 slot = 1;                          // Slot number
+  uint64 parent = 2;                        // Parent slot number
+  int32 status = 3;                         // Slot status (processed/confirmed/rooted)
+  bytes block_hash = 4;                     // Block hash (32 bytes)
+  uint64 block_height = 5;                  // Block height
 }
 ```
 
 ### Supporting Types
 
+#### Message Structure (Optimized for Legacy and v0 transactions)
+```protobuf
+message Message {
+  uint32 version = 1;                       // 0 for legacy, 1 for v0
+  MessageHeader header = 2;
+  bytes recent_block_hash = 3;              // 32 bytes
+  repeated bytes account_keys = 4;          // Array of 32 byte keys
+  repeated CompiledInstruction instructions = 5;
+  repeated MessageAddressTableLookup address_table_lookups = 6;  // Only used for v0
+  LoadedAddresses loaded_addresses = 7;                          // Only used for v0
+  repeated bool is_writable = 8;                                // Account write permissions
+}
+
+message MessageHeader {
+  uint32 num_required_signatures = 1;
+  uint32 num_readonly_signed_accounts = 2;
+  uint32 num_readonly_unsigned_accounts = 3;
+}
+```
+
 #### Token Balance Information
 ```protobuf
 message TransactionTokenBalance {
-    uint32 account_index = 1;                 // Index of the token account
-    string mint = 2;                          // Token mint address
-    UiTokenAmount ui_token_account = 3;       // Token amount information
-    string owner = 4;                         // Token account owner
+  uint32 account_index = 1;                 // Index of the token account
+  string mint = 2;                          // Token mint address
+  UiTokenAmount ui_token_amount = 3;        // Token amount information
+  string owner = 4;                         // Token account owner
 }
 
 message UiTokenAmount {
-    string amount = 1;                        // Raw token amount
-    uint32 decimals = 2;                      // Token decimals
-    string ui_amount_string = 3;              // Human-readable amount
-    google.protobuf.DoubleValue ui_amount = 4;  // Decimal amount
+  double ui_amount = 1;                     // Decimal amount
+  uint32 decimals = 2;                      // Token decimals
+  string amount = 3;                        // Raw token amount string
+  string ui_amount_string = 4;              // Human-readable amount string
 }
 ```
 
 #### Instruction Details
 ```protobuf
 message CompiledInstruction {
-    uint32 program_id_index = 1;              // Index of program ID
-    bytes data = 2;                           // Instruction data
-    repeated uint32 accounts = 3;             // Account index array
+  uint32 program_id_index = 1;              // Index of program ID
+  bytes data = 2;                           // Instruction data
+  repeated uint32 accounts = 3;             // Account index array (packed)
 }
 
 message InnerInstructions {
-    uint32 index = 1;                         // Instruction index
-    repeated InnerInstruction instructions = 2;  // Inner instruction array
+  uint32 index = 1;                         // Instruction index
+  repeated InnerInstruction instructions = 2;  // Inner instruction array
 }
 
 message InnerInstruction {
-    CompiledInstruction instruction = 1;       // Instruction details
-    optional uint32 stack_height = 2;          // CPI stack height
+  CompiledInstruction instruction = 1;       // Instruction details
+  optional uint32 stack_height = 2;         // CPI stack height
 }
 ```
 
@@ -209,10 +293,10 @@ message InnerInstruction {
 - Server Address: `example-grpc.thornode.io:50051` (replace with the actual server address)
 - Protocol: gRPC (HTTP/2)
 - TLS: Enabled
-  
+
 ### Authentication and Client Identification
 
-### Token System
+#### Token System
 - Each authentication token serves as a unique client identifier
 - Tokens must be included in all gRPC requests via metadata
 - One token represents one client connection
@@ -225,38 +309,71 @@ metadata: {
 ## Client Limits
 
 ### Subscription Limits per Client (Token)
-1. **Maximum Concurrent Subscriptions**: 4 total
-2. **One Subscription per Event Type**:
-   - 1x Transaction Stream (`SubscribeToTransactions`)
-   - 1x Account Updates Stream (`SubscribeToAccountUpdates`)
-   - 1x Slot Status Stream (`SubscribeToSlotStatus`)
-   - 1x Wallet Transactions Stream (`SubscribeToWalletTransactions`)
+1. **Maximum Concurrent Subscriptions**: 6 total
+2. **Multiple Subscriptions per Event Type**:
+    - Up to 2x Transaction Streams (`SubscribeToTransactions`)
+    - Up to 5x Account Updates Streams (`SubscribeToAccountUpdates`)
+    - Up to 2x Slot Status Streams (`SubscribeToSlotStatus`)
+    - Up to 10x Wallet Transactions Streams (`SubscribeToWalletTransactions`)
 
 ### Subscription Rules
-- Each client can maintain only one active subscription of each type
-- New subscription attempts of the same type will be rejected
-- Existing subscription must be closed before starting a new one
+- Each client can maintain multiple active subscriptions of each type within limits
 - Maximum 10 wallet addresses per wallet subscription
+- Maximum 100 account addresses per account subscription
+- Total subscriptions across all types cannot exceed 6 per client
 
 ## Performance Requirements
-- Clients MUST process messages quickly enough to keep up with the stream
-- Slow clients will be automatically disconnected
-- Warning messages will be sent before disconnection
-- Disconnection triggers:
-  - High message drop rate (>50% messages dropped)
-  - Consistent processing latency spikes
-  - Buffer overflow
-  - Extended inactivity periods
+
+### Client Infrastructure Requirements
+
+#### For Unified Stream (StreamUpdates)
+The unified stream is an **extremely high-throughput data feed** that combines all event types. Using this stream requires:
+
+- **High-Performance Servers**: Multi-core processors (8+ cores recommended)
+- **Sufficient RAM**: Minimum 8GB, 16GB+ recommended for production
+- **Fast Network Connection**: Low-latency, high-bandwidth connection
+- **Optimized Code**: Efficient message processing and deserialization
+- **Proper Architecture**: Asynchronous processing, worker pools, message queuing
+
+#### For Individual Streams (EventPublisher)
+Individual streams have more manageable throughput and can run on modest hardware:
+- **Standard Servers**: 2-4 core processors sufficient for most use cases
+- **Moderate RAM**: 2-4GB typically adequate
+- **Regular Network**: Standard broadband connections work well
+
+### Disconnection Policy
+
+#### Automatic Disconnection Triggers
+Clients will be **automatically disconnected** if they cannot keep up with the stream:
+
+- **High Message Drop Rate**: >50% of messages dropped consistently
+- **Processing Latency Spikes**: Consistent delays in message acknowledgment
+- **Buffer Overflow**: Client-side or server-side buffer saturation
+- **Extended Inactivity**: No message processing activity detected
+
+#### Performance Monitoring
+- **Warning Messages**: Sent before disconnection to allow optimization
+- **Performance Metrics**: Server monitors client processing capabilities
+- **Automatic Cleanup**: Slow clients are removed to maintain service quality
+
+#### Client Responsibility
+**If you experience frequent disconnections:**
+1. **Upgrade Your Infrastructure**: More powerful servers, better network
+2. **Optimize Your Code**: Implement async processing, reduce per-message latency
+3. **Consider Individual Streams**: Use EventPublisher for lower-volume needs
+4. **Monitor Resource Usage**: CPU, memory, and network utilization
+
+**⚠️ Important**: Frequent disconnections indicate your client infrastructure cannot handle the unified stream's throughput. This is not a service issue - you need more powerful hardware and optimized code.
 
 ## Implementation Examples
 
-### Python Example
+### Python Example (Unified Stream)
 ```python
 import grpc
 import asyncio
 from google.protobuf.empty_pb2 import Empty
-from thor_streamer.proto import publisher_pb2_grpc as pb2_grpc
-from thor_streamer.proto import publisher_pb2 as pb2
+from thor_streamer.proto import events_pb2_grpc as events_grpc
+from thor_streamer.proto import events_pb2 as events_pb2
 
 class ThorClient:
     def __init__(self, server_addr: str, token: str):
@@ -264,34 +381,77 @@ class ThorClient:
         self.server_addr = server_addr
         self.metadata = [('authorization', token)]
 
-    async def process_transaction(self, tx):
-        print(f"Processing tx: {tx.signature.hex()}")
-        # Add your processing logic here
+    async def process_message(self, wrapper):
+        if wrapper.HasField('transaction'):
+            tx_wrapper = wrapper.transaction
+            tx = tx_wrapper.transaction
+            print(f"Processing tx: {tx.signature.hex()}, type: {tx_wrapper.stream_type}")
+        elif wrapper.HasField('account_update'):
+            account = wrapper.account_update
+            print(f"Account update: {account.pubkey.hex()}")
+        elif wrapper.HasField('slot'):
+            slot = wrapper.slot
+            print(f"Slot update: {slot.slot}, status: {slot.status}")
 
-    async def subscribe_transactions(self):
+    async def stream_updates(self):
         async with grpc.aio.insecure_channel(self.server_addr) as channel:
-            stub = pb2_grpc.EventPublisherStub(channel)
+            stub = events_grpc.ThorStreamerStub(channel)
             try:
-                stream = stub.SubscribeToTransactions(
-                    Empty(), metadata=self.metadata)
-                async for tx in stream:
-                    await self.process_transaction(tx)
+                stream = stub.StreamUpdates(Empty(), metadata=self.metadata)
+                async for message in stream:
+                    await self.process_message(message)
             except grpc.RpcError as e:
                 print(f"Stream error: {e.code()}")
                 
 client = ThorClient("example-grpc.thornode.io:50051", "your-token")
-asyncio.run(client.subscribe_transactions())
+asyncio.run(client.stream_updates())
 ```
 
-### Rust Example
+### Python Example (EventPublisher - Account Updates)
+```python
+import grpc
+import asyncio
+from thor_streamer.proto import publisher_pb2_grpc as pb2_grpc
+from thor_streamer.proto import publisher_pb2 as pb2
+
+class ThorAccountClient:
+    def __init__(self, server_addr: str, token: str):
+        self.token = token
+        self.server_addr = server_addr
+        self.metadata = [('authorization', token)]
+
+    async def process_account_update(self, data):
+        # Deserialize the StreamResponse data field
+        # Implementation depends on how the data is encoded
+        print(f"Account update received: {len(data)} bytes")
+
+    async def subscribe_account_updates(self, account_addresses):
+        async with grpc.aio.insecure_channel(self.server_addr) as channel:
+            stub = pb2_grpc.EventPublisherStub(channel)
+            request = pb2.SubscribeAccountsRequest(account_address=account_addresses)
+            
+            try:
+                stream = stub.SubscribeToAccountUpdates(request, metadata=self.metadata)
+                async for response in stream:
+                    await self.process_account_update(response.data)
+            except grpc.RpcError as e:
+                print(f"Stream error: {e.code()}")
+
+# Subscribe to specific accounts
+accounts = ["11111111111111111111111111111112", "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"]
+client = ThorAccountClient("example-grpc.thornode.io:50051", "your-token")
+asyncio.run(client.subscribe_account_updates(accounts))
+```
+
+### Rust Example (Unified Stream)
 ```rust
 use tonic::{Request, Streaming};
-use thor_proto::event_publisher_client::EventPublisherClient;
-use thor_proto::{Empty, TransactionEvent};
+use thor_proto::thor_streamer_client::ThorStreamerClient;
+use thor_proto::{Empty, MessageWrapper};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut client = EventPublisherClient::connect("http://example-grpc.thornode.io:50051").await?;
+    let mut client = ThorStreamerClient::connect("http://example-grpc.thornode.io:50051").await?;
     
     let mut request = Request::new(Empty {});
     request.metadata_mut().insert(
@@ -299,31 +459,43 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "your-token".parse()?
     );
 
-    let stream: Streaming<TransactionEvent> = 
-        client.subscribe_to_transactions(request).await?.into_inner();
+    let stream: Streaming<MessageWrapper> = 
+        client.stream_updates(request).await?.into_inner();
 
     tokio::pin!(stream);
-    while let Some(tx) = stream.try_next().await? {
+    while let Some(wrapper) = stream.try_next().await? {
         tokio::spawn(async move {
-            process_transaction(tx).await;
+            process_message(wrapper).await;
         });
     }
 
     Ok(())
 }
 
-async fn process_transaction(tx: TransactionEvent) {
-    println!("Processing tx: {:?}", hex::encode(&tx.signature));
-    // Add your processing logic here
+async fn process_message(wrapper: MessageWrapper) {
+    match wrapper.event_message {
+        Some(thor_proto::message_wrapper::EventMessage::Transaction(tx_wrapper)) => {
+            let tx = tx_wrapper.transaction.unwrap();
+            println!("Processing tx: {:?}, type: {:?}", 
+                hex::encode(&tx.signature), tx_wrapper.stream_type);
+        },
+        Some(thor_proto::message_wrapper::EventMessage::AccountUpdate(account)) => {
+            println!("Account update: {:?}", hex::encode(&account.pubkey));
+        },
+        Some(thor_proto::message_wrapper::EventMessage::Slot(slot)) => {
+            println!("Slot update: {}, status: {}", slot.slot, slot.status);
+        },
+        None => {}
+    }
 }
 ```
 
-### TypeScript Example
+### TypeScript Example (EventPublisher)
 ```typescript
 import * as grpc from '@grpc/grpc-js';
-import { Empty } from 'proto-protobuf/proto/protobuf/empty_pb';
+import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { EventPublisherClient } from './proto/publisher_grpc_pb';
-import { TransactionEvent } from './proto/publisher_pb';
+import { SubscribeAccountsRequest, StreamResponse } from './proto/publisher_pb';
 
 class ThorClient {
     private client: EventPublisherClient;
@@ -338,15 +510,15 @@ class ThorClient {
         this.metadata.set('authorization', token);
     }
 
-    async subscribeTransactions() {
-        const stream = this.client.subscribeToTransactions(
-            new Empty(),
-            this.metadata
-        );
+    async subscribeAccountUpdates(accountAddresses: string[]) {
+        const request = new SubscribeAccountsRequest();
+        request.setAccountAddressList(accountAddresses);
+
+        const stream = this.client.subscribeToAccountUpdates(request, this.metadata);
 
         return new Promise((resolve, reject) => {
-            stream.on('data', (tx: TransactionEvent) => {
-                this.processTransaction(tx);
+            stream.on('data', (response: StreamResponse) => {
+                this.processAccountUpdate(response.getData_asU8());
             });
 
             stream.on('error', (err) => {
@@ -360,27 +532,26 @@ class ThorClient {
         });
     }
 
-    private async processTransaction(tx: TransactionEvent) {
-        console.log('Processing tx:', tx.getSignature_asB64());
-        // Add your processing logic here
+    private async processAccountUpdate(data: Uint8Array) {
+        console.log('Account update received:', data.length, 'bytes');
+        // Process the account update data
     }
 }
 
 const client = new ThorClient('example-grpc.thornode.io:50051', 'your-token');
-client.subscribeTransactions().catch(console.error);
+const accounts = ['11111111111111111111111111111112', 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'];
+client.subscribeAccountUpdates(accounts).catch(console.error);
 ```
 
-### Go Example
+### Go Example (EventPublisher - Wallet Transactions)
 ```go
 package main
 
 import (
     "context"
     "log"
-    "time"
     "google.golang.org/grpc"
     "google.golang.org/grpc/metadata"
-    "github.com/golang/protobuf/ptypes/empty"
     pb "thor_grpc/proto"
 )
 
@@ -401,35 +572,39 @@ func NewThorClient(serverAddr, token string) (*ThorClient, error) {
     }, nil
 }
 
-func (c *ThorClient) SubscribeTransactions(ctx context.Context) error {
+func (c *ThorClient) SubscribeWalletTransactions(ctx context.Context, wallets []string) error {
     md := metadata.New(map[string]string{
         "authorization": c.token,
     })
     ctx = metadata.NewOutgoingContext(ctx, md)
 
-    stream, err := c.client.SubscribeToTransactions(ctx, &empty.Empty{})
+    request := &pb.SubscribeWalletRequest{
+        WalletAddress: wallets,
+    }
+
+    stream, err := c.client.SubscribeToWalletTransactions(ctx, request)
     if err != nil {
         return err
     }
 
     for {
-        tx, err := stream.Recv()
+        response, err := stream.Recv()
         if err != nil {
             return err
         }
 
         // Process asynchronously
-        go func(tx *pb.TransactionEvent) {
-            if err := c.processTransaction(tx); err != nil {
-                log.Printf("Error processing tx: %v", err)
+        go func(data []byte) {
+            if err := c.processWalletTransaction(data); err != nil {
+                log.Printf("Error processing wallet tx: %v", err)
             }
-        }(tx)
+        }(response.Data)
     }
 }
 
-func (c *ThorClient) processTransaction(tx *pb.TransactionEvent) error {
-    log.Printf("Processing tx: %x", tx.Signature)
-    // Add your processing logic here
+func (c *ThorClient) processWalletTransaction(data []byte) error {
+    log.Printf("Processing wallet transaction: %d bytes", len(data))
+    // Deserialize and process the transaction data
     return nil
 }
 
@@ -439,8 +614,13 @@ func main() {
         log.Fatal(err)
     }
 
+    wallets := []string{
+        "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+        "2ojv9BAiHUrvsm9gxDe7fJSzbNZSJcxZvf8dqmWGHG8S",
+    }
+
     ctx := context.Background()
-    if err := client.SubscribeTransactions(ctx); err != nil {
+    if err := client.SubscribeWalletTransactions(ctx, wallets); err != nil {
         log.Fatal(err)
     }
 }
@@ -454,9 +634,13 @@ func main() {
 - `INVALID_TOKEN`: Token format is incorrect
 
 ### Subscription Limits
-- `SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum number of allowed subscriptions (4)
-- `DUPLICATE_SUBSCRIPTION_TYPE`: Client already has an active subscription of this type
+- `SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum number of allowed subscriptions (6 total)
+- `TRANSACTION_SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum transaction subscriptions (2)
+- `ACCOUNT_SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum account subscriptions (5)
+- `SLOT_SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum slot subscriptions (2)
+- `WALLET_SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum wallet subscriptions (10)
 - `TOO_MANY_WALLET_ADDRESSES`: Wallet subscription request exceeds maximum allowed addresses (10)
+- `TOO_MANY_ACCOUNT_ADDRESSES`: Account subscription request exceeds maximum allowed addresses (100)
 
 ### Connection Errors
 - `CONNECTION_ERROR`: Failed to establish connection
@@ -468,7 +652,9 @@ func main() {
 - `INVALID_REQUEST`: Malformed request
 - `INVALID_PROGRAM_ID`: Program ID format is incorrect
 - `INVALID_WALLET_ADDRESS`: Wallet address format is incorrect
+- `INVALID_ACCOUNT_ADDRESS`: Account address format is incorrect
 - `EMPTY_WALLET_LIST`: No wallet addresses provided in subscription request
+- `EMPTY_ACCOUNT_LIST`: No account addresses provided in subscription request
 
 ### Server Errors
 - `INTERNAL`: Internal server error
@@ -500,8 +686,15 @@ func main() {
 - `INVALID_REQUEST`
 - `INVALID_PROGRAM_ID`
 - `INVALID_WALLET_ADDRESS`
+- `INVALID_ACCOUNT_ADDRESS`
+- `TRANSACTION_SUBSCRIPTION_LIMIT_REACHED`
+- `ACCOUNT_SUBSCRIPTION_LIMIT_REACHED`
+- `SLOT_SUBSCRIPTION_LIMIT_REACHED`
+- `WALLET_SUBSCRIPTION_LIMIT_REACHED`
 - `TOO_MANY_WALLET_ADDRESSES`
+- `TOO_MANY_ACCOUNT_ADDRESSES`
 - `EMPTY_WALLET_LIST`
+- `EMPTY_ACCOUNT_LIST`
 
 ### Data Handling Errors
 - `INVALID_MESSAGE_FORMAT`
@@ -541,27 +734,51 @@ func main() {
 ### Additional Considerations
 
 1. **Error Persistence**
-   - Some errors may be persistent until token refresh
-   - Some may require service restart
-   - Others may resolve automatically
+    - Some errors may be persistent until token refresh
+    - Some may require service restart
+    - Others may resolve automatically
 
 2. **Rate Limiting**
-   - Track error rates
-   - Implement circuit breakers where appropriate
-   - Use exponential backoff for retries
+    - Track error rates
+    - Implement circuit breakers where appropriate
+    - Use exponential backoff for retries
 
 3. **Error Reporting**
-   - Include error context in logs
-   - Track error frequencies
-   - Monitor error patterns
+    - Include error context in logs
+    - Track error frequencies
+    - Monitor error patterns
 
 ## Best Practices
 
-1. Always use the latest version of the generated client code for your language, following updates to the `.proto` files.
-2. Implement reconnection logic to handle disconnects gracefully in your application.
-3. Use SSL/TLS for secure communication (gRPC supports this natively in most languages).
-4. Handle backpressure by implementing flow control if your application processes events slower than it receives them.
-5. Consider implementing a worker pool for parallel processing of events, especially if the event processing is CPU-intensive.
+1. **Protocol Buffer Usage**
+    - Always use the latest version of the generated client code for your language, following updates to the `.proto` files
+    - Handle both message formats (unified MessageWrapper and individual StreamResponse)
+    - Use proper deserialization for StreamResponse data fields
+
+2. **Connection Management**
+    - Implement reconnection logic to handle disconnects gracefully in your application
+    - Use SSL/TLS for secure communication (gRPC supports this natively in most languages)
+    - **Choose the right stream type**: Use unified stream (`StreamUpdates`) only if you have powerful infrastructure; otherwise use individual EventPublisher streams
+    - **Monitor disconnections**: Frequent disconnections indicate insufficient client resources
+
+3. **Performance Optimization**
+    - Handle backpressure by implementing flow control if your application processes events slower than it receives them
+    - **Mandatory for unified stream**: Implement worker pools for parallel processing - single-threaded processing will not work
+    - Use asynchronous processing patterns to handle high-volume streams
+    - **Hardware requirements**: Ensure adequate CPU, RAM, and network resources before using unified stream
+    - Use the packed encoding benefits for repeated numeric fields
+
+4. **Message Processing**
+    - Handle oneof fields properly in MessageWrapper
+    - Process different stream types (FILTERED, WALLET, ACCOUNT) appropriately
+    - Implement proper error handling for message deserialization
+
+5. **Resource Management**
+    - Respect subscription limits (6 total: up to 2 transaction, 5 account, 2 slot, 10 wallet)
+    - Monitor your subscription usage across different event types
+    - Close unused subscriptions to free resources for new ones
+    - Monitor memory usage when processing high-volume streams
+    - Consider subscription strategy based on your application needs
 
 ## Disclaimer
 
@@ -574,4 +791,3 @@ This service and associated `.proto` files are provided by **ThorLabs** for use 
 - **Modification**: ThorLabs reserves the right to modify, suspend, or discontinue the service at any time without notice.
 
 This documentation provides comprehensive technical information for integrating with ThorStreamer. For additional support or questions, please contact our support team via our [discord server](https://discord.gg/thorlabs).
-

@@ -9,12 +9,17 @@ option go_package = "thor_streamer/proto";
 message StreamResponse {
   bytes data = 1;
 }
+message SubscribeAccountsRequest {
+  repeated string account_address = 1;
+}
 
 service EventPublisher {
   rpc SubscribeToTransactions(google.protobuf.Empty) returns (stream StreamResponse) {}
-  rpc SubscribeToAccountUpdates(google.protobuf.Empty) returns (stream StreamResponse) {}
   rpc SubscribeToSlotStatus(google.protobuf.Empty) returns (stream StreamResponse) {}
   rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream StreamResponse) {}
+
+  // NEW method to subscribe to account updates
+  rpc SubscribeToAccountUpdates(SubscribeAccountsRequest) returns (stream StreamResponse) {}
 }
 
 message SubscribeWalletRequest {

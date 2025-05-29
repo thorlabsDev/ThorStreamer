@@ -4,24 +4,39 @@ package thor_streamer.types;
 
 option go_package = "thor_streamer/proto;proto";
 
+message Empty {}
+
 // -----------------------------------------------------------------------------
 // Account Update Events - Optimized
 // -----------------------------------------------------------------------------
 
-message UpdateAccountEvent {
-  // Fixed length fields first
-  uint64 slot = 1;              // 8 bytes, frequently accessed
-  uint64 lamports = 2;          // 8 bytes, frequently accessed
-  uint64 rent_epoch = 3;        // 8 bytes
-  uint64 write_version = 4;     // 8 bytes
-  bool executable = 5;          // 1 byte
-
-  // Variable length fields after
-  bytes pubkey = 6;             // 32 bytes fixed but proto variable
-  bytes owner = 7;              // 32 bytes fixed but proto variable
-  bytes data = 8;               // variable length
-  optional bytes txn_signature = 9;  // optional, 64 bytes when present
+// SlotStatus message definition for slot information
+message SlotStatus {
+  uint64 slot = 1;
+  uint64 parent = 2;
+  int32 status = 3;
+  bytes block_hash = 4;
+  uint64 block_height = 5;
 }
+
+// This message matches the Yellowstone scheme, with slot kept as enum at field #9.
+message SubscribeUpdateAccountInfo {
+  bytes pubkey = 1;
+  uint64 lamports = 2;
+  bytes owner = 3;
+  bool executable = 4;
+  uint64 rent_epoch = 5;
+  bytes data = 6;
+  uint64 write_version = 7;
+  optional bytes txn_signature = 8;
+  optional SlotStatus slot = 9;
+}
+
+// Request message for subscribing to account updates.
+message ThorAccountsRequest {
+  repeated string account_address = 1;
+}
+
 
 // -----------------------------------------------------------------------------
 // Slot Status Events - Optimized
@@ -31,13 +46,9 @@ message SlotStatusEvent {
   // Fixed length fields grouped
   uint64 slot = 1;              // 8 bytes, frequently accessed
   uint64 parent = 2;            // 8 bytes
-  SlotStatus status = 3;        // enum (4 bytes)
-}
-
-enum SlotStatus {
-  PROCESSED = 0;  // Most common first
-  CONFIRMED = 1;
-  ROOTED = 2;
+  int32 status = 3;             // enum (4 bytes)
+  bytes block_hash = 4;         // 32-byte block hash
+  uint64 block_height = 5;      // block height
 }
 
 // -----------------------------------------------------------------------------
@@ -153,6 +164,7 @@ enum StreamType {
   STREAM_TYPE_UNSPECIFIED = 0;
   STREAM_TYPE_FILTERED = 1;
   STREAM_TYPE_WALLET = 2;
+  STREAM_TYPE_ACCOUNT = 3;
 }
 
 message TransactionEventWrapper {
@@ -162,8 +174,12 @@ message TransactionEventWrapper {
 
 message MessageWrapper {
   oneof event_message {
-    UpdateAccountEvent account = 1;
+    SubscribeUpdateAccountInfo account_update = 1;
     SlotStatusEvent slot = 2;
     TransactionEventWrapper transaction = 3;
   }
+}
+
+service ThorStreamer {
+  rpc StreamUpdates(Empty) returns (stream MessageWrapper);
 }
