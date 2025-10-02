@@ -13,6 +13,7 @@ bs58 = "0.5.1"
 chrono = "0.4"
 prost-types = "0.13.5"
 http-body = "1.0.1"
+tokio-stream = "0.1.17"
 
 [build-dependencies]
 tonic-build = "0.12.3"
