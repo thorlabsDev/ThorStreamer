@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"io"
 	"time"
 
 	pb "github.com/thorlabsDev/ThorStreamer/sdks/go/proto"
@@ -204,4 +205,9 @@ func (c *Client) SubscribeToThorUpdates(ctx context.Context) (*ThorStream, error
 // Recv receives the next Thor update message
 func (ts *ThorStream) Recv() (*pb.MessageWrapper, error) {
 	return ts.stream.Recv()
+}
+
+// Helper function to check if stream is done
+func IsStreamDone(err error) bool {
+	return err == io.EOF || err == context.Canceled
 }
