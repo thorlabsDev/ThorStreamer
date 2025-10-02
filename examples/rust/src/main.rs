@@ -2,8 +2,8 @@
 //!
 //! This file sets up the gRPC client, loads configuration from a JSON file,
 //! and subscribes to different event streams (transactions, slot status updates,
-//! or wallet transactions) based on user input. Detailed debugging information
-//! is printed and logged for transaction events.
+//! wallet transactions, or account updates) based on user input. Detailed debugging
+//! information is printed and logged for transaction and account events.
 
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
@@ -39,10 +39,10 @@ use google::protobuf::Empty as GoogleEmpty;
 
 // The client from `publisher.proto`:
 use publisher::event_publisher_client::EventPublisherClient;
-use publisher::SubscribeWalletRequest;
+use publisher::{SubscribeWalletRequest, SubscribeAccountsRequest};
 
 // Local types from events.proto
-use thor_streamer::types::{Message, MessageWrapper, SlotStatusEvent, TransactionEvent};
+use thor_streamer::types::{Message, MessageWrapper, SlotStatusEvent, TransactionEvent, SubscribeUpdateAccountInfo};
 use thor_streamer::types::message_wrapper::EventMessage;
 
 /// Configuration settings for the application.
@@ -64,6 +64,20 @@ struct SignatureLog {
     signature: String,
     slot: u64,
     success: bool,
+}
+
+/// Structure for logging account updates.
+///
+/// This log entry includes the timestamp, account pubkey, owner, lamports,
+/// and slot information.
+#[derive(Debug, Serialize)]
+struct AccountUpdateLog {
+    timestamp: String,
+    pubkey: String,
+    owner: String,
+    lamports: u64,
+    slot: u64,
+    executable: bool,
 }
 
 /// Loads the configuration file in JSON format from the same directory as the executable.
@@ -88,6 +102,82 @@ fn load_config(filename: &str) -> Result<Config, Box<dyn std::error::Error>> {
 
     let config: Config = serde_json::from_str(&contents)?;
     Ok(config)
+}
+
+/// Prints detailed debug information for an account update event and logs it.
+///
+/// The function prints account details such as pubkey, owner, lamports, executable status,
+/// and logs the information in JSON format to a log file named "account_updates.log".
+///
+/// # Arguments
+///
+/// * `account` - A reference to the `SubscribeUpdateAccountInfo` to be debugged.
+fn debug_account_update(account: &SubscribeUpdateAccountInfo) {
+    println!("Account Update Debug Information:");
+    println!("├─ Pubkey: {}", bs58::encode(&account.pubkey).into_string());
+    println!("├─ Owner: {}", bs58::encode(&account.owner).into_string());
+    println!("├─ Lamports: {}", account.lamports);
+    println!("├─ Executable: {}", account.executable);
+    println!("├─ Rent Epoch: {}", account.rent_epoch);
+    println!("├─ Write Version: {}", account.write_version);
+    println!("├─ Data Length: {} bytes", account.data.len());
+
+    if let Some(sig) = &account.txn_signature {
+        println!("├─ Transaction Signature: {}", bs58::encode(sig).into_string());
+    } else {
+        println!("├─ Transaction Signature: None");
+    }
+
+    if let Some(slot_status) = &account.slot {
+        println!("├─ Slot Information:");
+        println!("│  ├─ Slot: {}", slot_status.slot);
+        println!("│  ├─ Parent: {}", slot_status.parent);
+
+        let status_str = match slot_status.status {
+            0 => "PROCESSED",
+            1 => "CONFIRMED",
+            2 => "ROOTED",
+            _ => "UNKNOWN",
+        };
+        println!("│  ├─ Status: {}", status_str);
+
+        if !slot_status.block_hash.is_empty() {
+            println!("│  ├─ Block Hash: {}", bs58::encode(&slot_status.block_hash).into_string());
+        }
+        println!("│  └─ Block Height: {}", slot_status.block_height);
+    } else {
+        println!("└─ Slot Information: None");
+    }
+
+    // Log to file
+    let exe_path = env::current_exe().expect("Failed to get executable path");
+    let exe_dir = exe_path.parent().expect("Failed to get executable directory");
+    let log_file_path = exe_dir.join("account_updates.log");
+
+    let mut log_file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(log_file_path)
+        .expect("Failed to open log file");
+
+    // Log JSON to file
+    let timestamp = Utc::now().format("%Y-%m-%dT%H:%M:%S.000Z").to_string();
+    let pubkey_base58 = bs58::encode(&account.pubkey).into_string();
+    let owner_base58 = bs58::encode(&account.owner).into_string();
+
+    let slot = account.slot.as_ref().map(|s| s.slot).unwrap_or(0);
+
+    let account_log = AccountUpdateLog {
+        timestamp,
+        pubkey: pubkey_base58,
+        owner: owner_base58,
+        lamports: account.lamports,
+        slot,
+        executable: account.executable,
+    };
+
+    let json_log = serde_json::to_string(&account_log).expect("Failed to marshal log");
+    writeln!(log_file, "{}", json_log).expect("Failed to write to log file");
 }
 
 /// Prints detailed debug information for a given transaction event and logs its signature.
@@ -393,6 +483,50 @@ where
     Ok(())
 }
 
+/// Subscribes to account update events for specified account addresses and/or owner addresses.
+///
+/// # Arguments
+///
+/// * `client` - A gRPC client for the `EventPublisher` service.
+/// * `account_addresses` - A vector of account addresses (as strings) to subscribe to.
+/// * `owner_addresses` - A vector of owner addresses (as strings) to filter by.
+///
+/// # Returns
+///
+/// * `Ok(())` if the subscription and debugging complete successfully; otherwise an error.
+async fn subscribe_to_account_updates<T>(
+    mut client: EventPublisherClient<T>,
+    account_addresses: Vec<String>,
+    owner_addresses: Vec<String>,
+) -> Result<(), Box<dyn std::error::Error>>
+where
+    T: tonic::client::GrpcService<tonic::body::BoxBody>,
+    T::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    T::ResponseBody: Body<Data = tonic::codegen::Bytes> + Send + 'static,
+    <T::ResponseBody as Body>::Error: Into<Box<dyn std::error::Error + Send + Sync>> + Send,
+{
+    let request = Request::new(SubscribeAccountsRequest {
+        account_address: account_addresses,
+        owner_address: owner_addresses,
+    });
+
+    let mut stream = client.subscribe_to_account_updates(request).await?.into_inner();
+
+    println!("Subscribed to account updates. Waiting for updates...");
+
+    while let Some(resp) = stream.message().await? {
+        let msg_wrapper = MessageWrapper::decode(&resp.data[..])?;
+
+        if let Some(EventMessage::AccountUpdate(account_update)) = msg_wrapper.event_message {
+            debug_account_update(&account_update);
+        } else {
+            println!("Received a non-account-update event");
+        }
+    }
+
+    Ok(())
+}
+
 /// Entry point of the application.
 ///
 /// Loads the configuration, establishes a gRPC client connection with authorization,
@@ -419,6 +553,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("1: All Transactions");
     println!("2: Slot Status Updates");
     println!("3: Wallet Transactions");
+    println!("4: Account Updates");
 
     let mut choice = String::new();
     io::stdin().read_line(&mut choice)?;
@@ -431,8 +566,40 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Enter wallet addresses (comma-separated):");
             let mut input = String::new();
             io::stdin().read_line(&mut input)?;
-            let wallets: Vec<String> = input.trim().split(',').map(|s| s.to_string()).collect();
+            let wallets: Vec<String> = input.trim().split(',').map(|s| s.trim().to_string()).collect();
             subscribe_to_wallet_transactions(publisher_client, wallets).await?
+        }
+        4 => {
+            println!("Enter account addresses to monitor (comma-separated, or press Enter to skip):");
+            let mut account_input = String::new();
+            io::stdin().read_line(&mut account_input)?;
+            let accounts: Vec<String> = if account_input.trim().is_empty() {
+                vec![]
+            } else {
+                account_input.trim().split(',').map(|s| s.trim().to_string()).collect()
+            };
+
+            println!("Enter owner addresses to filter by (comma-separated, or press Enter to skip):");
+            let mut owner_input = String::new();
+            io::stdin().read_line(&mut owner_input)?;
+            let owners: Vec<String> = if owner_input.trim().is_empty() {
+                vec![]
+            } else {
+                owner_input.trim().split(',').map(|s| s.trim().to_string()).collect()
+            };
+
+            if accounts.is_empty() && owners.is_empty() {
+                println!("At least one account address or owner address is required");
+            } else {
+                println!("Subscribing to account updates:");
+                if !accounts.is_empty() {
+                    println!("  Account addresses: {:?}", accounts);
+                }
+                if !owners.is_empty() {
+                    println!("  Owner addresses: {:?}", owners);
+                }
+                subscribe_to_account_updates(publisher_client, accounts, owners).await?
+            }
         }
         _ => println!("Invalid choice"),
     }

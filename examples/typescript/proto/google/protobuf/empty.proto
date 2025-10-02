@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package google.protobuf;
+
+option go_package = "google.golang.org/protobuf/types/known/emptypb";
+
+message Empty {}

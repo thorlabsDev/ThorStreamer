@@ -59,7 +59,8 @@ message SubscribeWalletRequest {
 }
 
 message SubscribeAccountsRequest {
-  repeated string account_address = 1;
+  repeated string account_address = 1;  // Account addresses to monitor
+  repeated string owner_address = 2;    // Owner addresses to filter by
 }
 ```
 
@@ -87,41 +88,53 @@ message SubscribeAccountsRequest {
     - Market making and trading strategies
 
 
-| Program Name | Program ID |
-|---------|---|
-| Fluxbeam | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X` |
-| game.com | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
-| Lifinity V2 | `2wT8Yq49kHgDzXuPxZSaeLaH1qbmGXtEyPy64bL7aD3c` |
-| Magic Eden V2 | `M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K` |
-| Meteora DAMM v2 | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` |
-| Meteora DLMM | `LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo` |
-| Meteora Pools | `Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB` |
-| Moonshot | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
-| OpenBook | `srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX` |
-| Orca | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` |
-| Pump.fun | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` |
-| Pump.fun AMM | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` |
-| Pump.fun Fee Account | `CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM` |
-| Pump.fun: Raydium Migration | `39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg` |
-| Raydium CLMM | `CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK` |
-| Raydium CPMM | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` |
-| Raydium Launchpad | `LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj` |
-| Raydium Launchpad Authority | `WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh` |
-| Raydium Liquidity Pool V4 | `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8` |
-| SolFi | `SoLFiHG9TfgtdUXUjWAxi3LtvYuFyDLVhBWxdMZxyCe` |
-| Tensor cNFT | `TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp` |
-| Tensor Swap | `TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN` |
+| Program Name                   | Program ID |
+|--------------------------------|---|
+| Fluxbeam                       | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X` |
+| game.com                       | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
+| Lifinity V2                    | `2wT8Yq49kHgDzXuPxZSaeLaH1qbmGXtEyPy64bL7aD3c` |
+| Magic Eden V2                  | `M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K` |
+| Meteora DAMM v2                | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` |
+| Meteora DLMM                   | `LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo` |
+| Meteora Pools                  | `Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB` |
+| Meteora DBC: Pool Authority    | `FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM` |
+| Meteora Dynamic Bonding Curve  | `dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN` |
+| Moonshot                       | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
+| OpenBook                       | `srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX` |
+| Orca                           | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` |
+| Pump.fun                       | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` |
+| Pump.fun AMM                   | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` |
+| Pump.fun Fee Account           | `CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM` |
+| Pump.fun: Raydium Migration    | `39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg` |
+| Raydium CLMM                   | `CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK` |
+| Raydium CPMM                   | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` |
+| Raydium Launchpad              | `LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj` |
+| Raydium Launchpad Authority    | `WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh` |
+| Raydium Liquidity Pool V4      | `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8` |
+| SolFi                          | `SoLFiHG9TfgtdUXUjWAxi3LtvYuFyDLVhBWxdMZxyCe` |
+| Tensor cNFT                    | `TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp` |
+| Tensor Swap                    | `TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN` |
+| Vertigo                        | `vrTGoBuy5rYSxAfV3jaRJWHH6nN9WK4NRExGxsk1bCJ` |
+
 
 *Note: Feel free to ask for any missing or requested program IDs.*
 
 #### 2. SubscribeToAccountUpdates
-- **Purpose**: Stream account data changes in real-time
-- **Input**: SubscribeAccountsRequest with array of account addresses
+- **Purpose**: Stream account data changes in real-time with flexible filtering
+- **Input**: SubscribeAccountsRequest with:
+    - `account_address`: Array of specific account addresses to monitor
+    - `owner_address`: Array of owner program addresses to filter accounts by
 - **Output**: Stream of StreamResponse messages containing account update data
+- **Filtering Options**:
+    - Monitor specific accounts by address
+    - Monitor all accounts owned by specific programs
+    - Combine both filters for targeted monitoring
 - **Use cases**:
     - Monitor token account balances
     - Track program account state changes
     - Real-time portfolio tracking
+    - Monitor all accounts owned by a specific program
+    - Track NFT collection updates by owner program
 
 #### 3. SubscribeToSlotStatus
 - **Purpose**: Monitor Solana slot progression
@@ -319,6 +332,10 @@ metadata: {
 - Maximum 10 wallet addresses per wallet subscription
 - Maximum 100 account addresses per account subscription
 - Total subscriptions across all types cannot exceed 6 per client
+- Account subscriptions can filter by:
+- Specific account addresses (up to 100 per subscription)
+- Owner program addresses (to monitor all accounts owned by those programs)
+- Both filters combined for targeted monitoring
 
 ## Performance Requirements
 
@@ -420,13 +437,15 @@ class ThorAccountClient:
 
     async def process_account_update(self, data):
         # Deserialize the StreamResponse data field
-        # Implementation depends on how the data is encoded
         print(f"Account update received: {len(data)} bytes")
 
-    async def subscribe_account_updates(self, account_addresses):
+    async def subscribe_account_updates(self, account_addresses=None, owner_addresses=None):
         async with grpc.aio.insecure_channel(self.server_addr) as channel:
             stub = pb2_grpc.EventPublisherStub(channel)
-            request = pb2.SubscribeAccountsRequest(account_address=account_addresses)
+            request = pb2.SubscribeAccountsRequest(
+                account_address=account_addresses or [],
+                owner_address=owner_addresses or []
+            )
             
             try:
                 stream = stub.SubscribeToAccountUpdates(request, metadata=self.metadata)
@@ -435,10 +454,20 @@ class ThorAccountClient:
             except grpc.RpcError as e:
                 print(f"Stream error: {e.code()}")
 
-# Subscribe to specific accounts
+# Example 1: Subscribe to specific accounts
 accounts = ["11111111111111111111111111111112", "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"]
 client = ThorAccountClient("example-grpc.thornode.io:50051", "your-token")
-asyncio.run(client.subscribe_account_updates(accounts))
+asyncio.run(client.subscribe_account_updates(account_addresses=accounts))
+
+# Example 2: Subscribe to all accounts owned by specific programs
+owner_programs = ["TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"]
+asyncio.run(client.subscribe_account_updates(owner_addresses=owner_programs))
+
+# Example 3: Combined filtering
+asyncio.run(client.subscribe_account_updates(
+    account_addresses=accounts,
+    owner_addresses=owner_programs
+))
 ```
 
 ### Rust Example (Unified Stream)
@@ -508,9 +537,14 @@ class ThorClient {
         this.metadata.set('authorization', token);
     }
 
-    async subscribeAccountUpdates(accountAddresses: string[]) {
+    async subscribeAccountUpdates(accountAddresses?: string[], ownerAddresses?: string[]) {
         const request = new SubscribeAccountsRequest();
-        request.setAccountAddressList(accountAddresses);
+        if (accountAddresses) {
+            request.setAccountAddressList(accountAddresses);
+        }
+        if (ownerAddresses) {
+            request.setOwnerAddressList(ownerAddresses);
+        }
 
         const stream = this.client.subscribeToAccountUpdates(request, this.metadata);
 
@@ -536,9 +570,17 @@ class ThorClient {
     }
 }
 
+// Example 1: Monitor specific accounts
 const client = new ThorClient('example-grpc.thornode.io:50051', 'your-token');
 const accounts = ['11111111111111111111111111111112', 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'];
 client.subscribeAccountUpdates(accounts).catch(console.error);
+
+// Example 2: Monitor all accounts owned by specific programs
+const ownerPrograms = ['TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'];
+client.subscribeAccountUpdates(undefined, ownerPrograms).catch(console.error);
+
+// Example 3: Combined filtering
+client.subscribeAccountUpdates(accounts, ownerPrograms).catch(console.error);
 ```
 
 ### Go Example (EventPublisher - Wallet Transactions)

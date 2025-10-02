@@ -1,0 +1,4 @@
+{
+  "serverAddress": "yourThorStreamerAddress:Port",
+  "authToken": "yourAuthToken"
+}

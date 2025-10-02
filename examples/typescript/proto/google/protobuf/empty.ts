@@ -2,7 +2,7 @@
 * compiler version: 3.12.4
 * source: google/protobuf/empty.proto
 * git: https://github.com/thesayyn/protoc-gen-ts */
-    import * as pb_1 from "google-protobuf";
+import * as pb_1 from "google-protobuf";
 export namespace google.protobuf {
     export class Empty extends pb_1.Message {
         #one_of_decls: number[][] = [];

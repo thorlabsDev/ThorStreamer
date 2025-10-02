@@ -1,4 +1,4 @@
 {
-  "server_address": "http://45.152.160.41:50051",
-  "auth_token": "your-auth-token-here"
+  "server_address": "yourThorStreamerAddress:Port",
+  "auth_token": "yourAuthToken"
 }

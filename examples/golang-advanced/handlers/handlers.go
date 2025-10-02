@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -46,35 +47,42 @@ func SubscribeToFilteredTransactions(ctx context.Context, client pb.EventPublish
 			continue
 		}
 
-		txWrapper, ok := msgWrapper.GetEventMessage().(*pb.MessageWrapper_Transaction)
-		if !ok || txWrapper.Transaction == nil || txWrapper.Transaction.Transaction == nil {
+		// Check if this is a transaction event
+		switch msgWrapper.EventMessage.(type) {
+		case *pb.MessageWrapper_Transaction:
+			txWrapper := msgWrapper.GetTransaction()
+			if txWrapper == nil || txWrapper.Transaction == nil {
+				continue
+			}
+
+			tx := txWrapper.Transaction
+
+			if !txFilter.WantsTransaction(tx) {
+				continue
+			}
+
+			// Extract program ID for logging
+			programIDs := filter.ExtractProgramIDs(tx)
+			primaryProgramID := "unknown"
+			if len(programIDs) > 0 {
+				primaryProgramID = programIDs[0]
+			}
+
+			// Log signature
+			if err := sigLogger.LogSignature(
+				tx.Signature,
+				tx.Slot,
+				primaryProgramID,
+				tx.TransactionStatusMeta != nil && !tx.TransactionStatusMeta.IsStatusErr,
+			); err != nil {
+				log.Printf("Failed to log signature: %v", err)
+			}
+
+			printer.PrintTransaction(tx)
+		default:
+			// Not a transaction event, skip
 			continue
 		}
-
-		tx := txWrapper.Transaction.Transaction
-
-		if !txFilter.WantsTransaction(tx) {
-			continue
-		}
-
-		// Extract program ID for logging
-		programIDs := filter.ExtractProgramIDs(tx)
-		primaryProgramID := "unknown"
-		if len(programIDs) > 0 {
-			primaryProgramID = programIDs[0]
-		}
-
-		// Log signature
-		if err := sigLogger.LogSignature(
-			tx.Signature,
-			tx.Slot,
-			primaryProgramID,
-			tx.TransactionStatusMeta != nil && !tx.TransactionStatusMeta.IsStatusErr,
-		); err != nil {
-			log.Printf("Failed to log signature: %v", err)
-		}
-
-		printer.PrintTransaction(tx)
 	}
 }
 
@@ -110,22 +118,54 @@ func SubscribeToWalletTransactions(ctx context.Context, client pb.EventPublisher
 			continue
 		}
 
-		txWrapper, ok := msgWrapper.GetEventMessage().(*pb.MessageWrapper_Transaction)
-		if !ok || txWrapper.Transaction == nil || txWrapper.Transaction.Transaction == nil {
+		// Check if this is a transaction event
+		switch msgWrapper.EventMessage.(type) {
+		case *pb.MessageWrapper_Transaction:
+			txWrapper := msgWrapper.GetTransaction()
+			if txWrapper == nil || txWrapper.Transaction == nil {
+				continue
+			}
+
+			if txWrapper.StreamType != pb.StreamType_STREAM_TYPE_WALLET {
+				continue
+			}
+
+			printer.PrintDetailedTransaction(txWrapper.Transaction)
+		default:
 			continue
 		}
-
-		if txWrapper.Transaction.StreamType != pb.StreamType_STREAM_TYPE_WALLET {
-			continue
-		}
-
-		printer.PrintDetailedTransaction(txWrapper.Transaction.Transaction)
 	}
 }
 
 // SubscribeToAccountUpdates subscribes to account updates
 func SubscribeToAccountUpdates(ctx context.Context, client pb.EventPublisherClient) error {
-	stream, err := client.SubscribeToAccountUpdates(ctx, &emptypb.Empty{})
+	// Get account and owner addresses from user
+	fmt.Println("\nEnter account addresses to monitor (comma-separated, or press Enter to skip):")
+	accountInput := utils.Prompt("")
+	var accountAddresses []string
+	if accountInput != "" {
+		for _, addr := range strings.Split(accountInput, ",") {
+			accountAddresses = append(accountAddresses, strings.TrimSpace(addr))
+		}
+	}
+
+	fmt.Println("Enter owner addresses to filter by (comma-separated, or press Enter to skip):")
+	ownerInput := utils.Prompt("")
+	var ownerAddresses []string
+	if ownerInput != "" {
+		for _, addr := range strings.Split(ownerInput, ",") {
+			ownerAddresses = append(ownerAddresses, strings.TrimSpace(addr))
+		}
+	}
+
+	if len(accountAddresses) == 0 && len(ownerAddresses) == 0 {
+		return fmt.Errorf("at least one account or owner address is required")
+	}
+
+	stream, err := client.SubscribeToAccountUpdates(ctx, &pb.SubscribeAccountsRequest{
+		AccountAddress: accountAddresses,
+		OwnerAddress:   ownerAddresses,
+	})
 	if err != nil {
 		return fmt.Errorf("failed to subscribe to account updates: %v", err)
 	}
@@ -145,12 +185,17 @@ func SubscribeToAccountUpdates(ctx context.Context, client pb.EventPublisherClie
 			continue
 		}
 
-		accountEvent, ok := msgWrapper.GetEventMessage().(*pb.MessageWrapper_Account)
-		if !ok || accountEvent.Account == nil {
+		// Check if this is an account update event
+		switch msgWrapper.EventMessage.(type) {
+		case *pb.MessageWrapper_AccountUpdate:
+			accountUpdate := msgWrapper.GetAccountUpdate()
+			if accountUpdate == nil {
+				continue
+			}
+			printer.PrintAccountUpdate(accountUpdate)
+		default:
 			continue
 		}
-
-		printer.PrintAccountUpdate(accountEvent.Account)
 	}
 }
 
@@ -176,11 +221,16 @@ func SubscribeToSlotStatus(ctx context.Context, client pb.EventPublisherClient) 
 			continue
 		}
 
-		slotEvent, ok := msgWrapper.GetEventMessage().(*pb.MessageWrapper_Slot)
-		if !ok || slotEvent.Slot == nil {
+		// Check if this is a slot event
+		switch msgWrapper.EventMessage.(type) {
+		case *pb.MessageWrapper_Slot:
+			slotEvent := msgWrapper.GetSlot()
+			if slotEvent == nil {
+				continue
+			}
+			printer.PrintSlotStatus(slotEvent)
+		default:
 			continue
 		}
-
-		printer.PrintSlotStatus(slotEvent.Slot)
 	}
 }

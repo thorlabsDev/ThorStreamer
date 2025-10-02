@@ -1,21 +1,28 @@
 {
+  "name": "thor-streamer-client",
+  "version": "2.0.0",
+  "description": "Thor Streamer TypeScript Client",
+  "main": "dist/client.js",
+  "scripts": {
+    "proto:gen": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./proto --grpc_out=grpc_js:./proto --plugin=protoc-gen-grpc=./node_modules/.bin/grpc_tools_node_protoc_plugin -I ./proto ./proto/events.proto ./proto/publisher.proto && npm run proto:ts",
+    "proto:ts": "protoc --plugin=./node_modules/.bin/protoc-gen-ts --ts_out=service=grpc-node,mode=grpc-js:./proto -I ./proto ./proto/events.proto ./proto/publisher.proto",
+    "proto:clean": "find ./proto -name '*.js' -o -name '*.d.ts' | xargs rm -f",
+    "build": "npm run proto:gen && tsc",
+    "start": "node dist/client.js",
+    "dev": "ts-node client.ts",
+    "clean": "rm -rf dist && npm run proto:clean"
+  },
   "dependencies": {
-    "@grpc/grpc-js": "^1.12.5",
-    "@grpc/proto-loader": "^0.7.13",
-    "bs58": "^6.0.0",
-    "google-protobuf": "^3.21.4",
-    "grpc_tools_node_protoc_ts": "^5.3.3",
-    "grpc-tools": "^1.12.4"
+    "@grpc/grpc-js": "^1.9.0",
+    "bs58": "^5.0.0",
+    "google-protobuf": "^3.21.2"
   },
   "devDependencies": {
-    "@types/google-protobuf": "^3.15.12",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
-  },
-  "scripts": {
-    "generate": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./generated/proto --grpc_out=grpc_js:./generated/proto --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` --ts_out=./generated/proto -I ./proto ./proto/*.proto",
-    "start": "npm run generate && ts-node --project tsconfig.json client.ts",
-    "build": "tsc",
-    "dev": "ts-node-dev --project tsconfig.json --respawn client.ts"
+    "@types/google-protobuf": "^3.15.6",
+    "@types/node": "^20.0.0",
+    "grpc-tools": "^1.12.4",
+    "ts-node": "^10.9.1",
+    "ts-protoc-gen": "^0.15.0",
+    "typescript": "^5.0.0"
   }
 }

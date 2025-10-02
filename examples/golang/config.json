@@ -1,6 +1,6 @@
 {
-  "server_address": "<URL>:<PORT>",
-  "auth_token": "<TOKEN>",
+  "server_address": "yourThorStreamerAddress:Port",
+  "auth_token": "yourAuthToken",
   "program_filters": ["6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"],
   "filter_names": ["tx_filter"],
   "log_directory": "logs",

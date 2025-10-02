@@ -9,11 +9,18 @@ option go_package = "thor_streamer/proto";
 message StreamResponse {
   bytes data = 1;
 }
+message SubscribeAccountsRequest {
+  repeated string account_address = 1;
+  repeated string owner_address = 2;  // NEW: Filter by owner addresses
+}
 
 service EventPublisher {
   rpc SubscribeToTransactions(google.protobuf.Empty) returns (stream StreamResponse) {}
   rpc SubscribeToSlotStatus(google.protobuf.Empty) returns (stream StreamResponse) {}
   rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream StreamResponse) {}
+
+  // NEW method to subscribe to account updates
+  rpc SubscribeToAccountUpdates(SubscribeAccountsRequest) returns (stream StreamResponse) {}
 }
 
 message SubscribeWalletRequest {

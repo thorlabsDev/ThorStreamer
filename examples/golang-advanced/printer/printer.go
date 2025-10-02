@@ -52,22 +52,63 @@ func PrintDetailedTransaction(tx *pb.TransactionEvent) {
 	fmt.Println("└─ End Transaction\n")
 }
 
-// PrintAccountUpdate prints account update information
-func PrintAccountUpdate(account *pb.UpdateAccountEvent) {
+// PrintAccountUpdate prints account update information (updated for new proto)
+func PrintAccountUpdate(account *pb.SubscribeUpdateAccountInfo) {
 	fmt.Println("\n💳 Account Update:")
 	fmt.Printf("├─ Address: %s\n", base58.Encode(account.Pubkey))
 	fmt.Printf("├─ Owner: %s\n", base58.Encode(account.Owner))
 	fmt.Printf("├─ Balance: %s SOL\n", utils.LamportsToSol(account.Lamports))
 	fmt.Printf("├─ Executable: %v\n", account.Executable)
-	fmt.Printf("└─ Slot: %d\n\n", account.Slot)
+	fmt.Printf("├─ Rent Epoch: %v\n", account.RentEpoch)
+	fmt.Printf("├─ Write Version: %v\n", account.WriteVersion)
+
+	if account.TxnSignature != nil {
+		fmt.Printf("├─ Transaction Signature: %s\n", base58.Encode(account.TxnSignature))
+	}
+
+	if account.Slot != nil {
+		fmt.Printf("├─ Slot: %d\n", account.Slot.Slot)
+		fmt.Printf("├─ Parent: %d\n", account.Slot.Parent)
+		fmt.Printf("├─ Status: %d\n", account.Slot.Status)
+		if len(account.Slot.BlockHash) > 0 {
+			fmt.Printf("├─ Block Hash: %s\n", base58.Encode(account.Slot.BlockHash))
+		}
+		fmt.Printf("└─ Block Height: %d\n\n", account.Slot.BlockHeight)
+	} else {
+		fmt.Println("└─ Slot: N/A\n")
+	}
 }
 
-// PrintSlotStatus prints slot status information
+// PrintSlotStatus prints slot status information (updated for new proto)
 func PrintSlotStatus(slot *pb.SlotStatusEvent) {
-	fmt.Println("\n🔢 Slot Status:")
+	fmt.Println("\n📢 Slot Status:")
 	fmt.Printf("├─ Slot: %d\n", slot.Slot)
 	fmt.Printf("├─ Parent: %d\n", slot.Parent)
-	fmt.Printf("└─ Status: %s\n\n", pb.SlotStatus_name[int32(slot.Status)])
+
+	statusStr := "UNKNOWN"
+	switch slot.Status {
+	case 0:
+		statusStr = "PROCESSED"
+	case 1:
+		statusStr = "CONFIRMED"
+	case 2:
+		statusStr = "ROOTED"
+	case 3:
+		statusStr = "FIRST_SHRED_RECEIVED"
+	case 4:
+		statusStr = "COMPLETED"
+	case 5:
+		statusStr = "CREATED_BANK"
+	case 6:
+		statusStr = "DEAD"
+	}
+
+	fmt.Printf("├─ Status: %s\n", statusStr)
+
+	if len(slot.BlockHash) > 0 {
+		fmt.Printf("├─ Block Hash: %s\n", base58.Encode(slot.BlockHash))
+	}
+	fmt.Printf("└─ Block Height: %d\n\n", slot.BlockHeight)
 }
 
 // Private helper functions for detailed printing
