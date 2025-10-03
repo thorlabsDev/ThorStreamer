@@ -1,10 +1,11 @@
 [package]
 name = "thorstreamer-grpc-client"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 description = "Rust client for ThorStreamer gRPC streaming services"
-repository = "https://github.com/thorlabsDev/ThorStreamer/sdks/rust"
+repository = "https://github.com/thorlabsDev/ThorStreamer"
+homepage = "https://github.com/thorlabsDev/ThorStreamer/tree/master/sdks/rust"
 keywords = ["grpc", "solana", "streaming", "blockchain"]
 categories = ["api-bindings", "asynchronous"]
 
