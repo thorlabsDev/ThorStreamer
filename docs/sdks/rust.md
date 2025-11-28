@@ -8,15 +8,15 @@ Add to `Cargo.toml`:
 
 ```toml
 [dependencies]
-thor-grpc-client = "0.1.0"
+thorstreamer-grpc-client = "0.1"
 tokio = { version = "1", features = ["full"] }
 ```
 
 ## Quick Start
 
 ```rust
-use thor_grpc_client::{ClientConfig, ThorClient, parse_message};
-use thor_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
+use thorstreamer_grpc_client::{ClientConfig, ThorClient, parse_message};
+use thorstreamer_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Creating a Client
 
 ```rust
-use thor_grpc_client::{ClientConfig, ThorClient};
+use thorstreamer_grpc_client::{ClientConfig, ThorClient};
 use std::time::Duration;
 
 let config = ClientConfig {
@@ -61,7 +61,7 @@ let client = ThorClient::new(config).await?;
 ### subscribe_to_transactions
 
 ```rust
-use thor_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
+use thorstreamer_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
 
 let mut stream = client.subscribe_to_transactions().await?;
 
@@ -177,6 +177,6 @@ See [examples/rust](https://github.com/thorlabsDev/ThorStreamer/tree/master/exam
 
 ## Resources
 
-- [crates.io](https://crates.io/crates/thor-grpc-client)
-- [docs.rs Documentation](https://docs.rs/thor-grpc-client)
+- [crates.io](https://crates.io/crates/thorstreamer-grpc-client)
+- [docs.rs Documentation](https://docs.rs/thorstreamer-grpc-client)
 - [GitHub Repository](https://github.com/thorlabsDev/ThorStreamer)
