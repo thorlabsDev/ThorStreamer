@@ -8,14 +8,14 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-thor-grpc-client = "0.1.0"
+thorstreamer-grpc-client = "0.1.2"
 tokio = { version = "1", features = ["full"] }
 ```
 
 ## Quick Start
 
 ```rust
-use thor_grpc_client::{ClientConfig, ThorClient, parse_message};
+use thorstreamer_grpc_client::{ClientConfig, ThorClient, parse_message};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -32,12 +32,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     while let Some(response) = stream.message().await? {
         let msg = parse_message(&response.data)?;
-        
-        use thor_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
-        if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-            if let Some(tx) = tx_wrapper.transaction {
-                println!("Transaction: slot={}", tx.slot);
-            }
+
+        use thorstreamer_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
+        if let Some(EventMessage::Transaction(tx)) = msg.event_message {
+            println!("Transaction: slot={}", tx.slot);
         }
     }
 
@@ -86,7 +84,6 @@ let token = std::env::var("AUTH_TOKEN")?;
 
 - **Transaction Streaming**: Real-time Solana transaction updates
 - **Slot Status**: Subscribe to slot confirmations and updates
-- **Wallet Tracking**: Monitor specific wallet addresses (up to 10 per request)
 - **Account Updates**: Track account state changes with owner filtering
 - **Async/Await**: Built on Tokio for efficient async operations
 - **Type Safety**: Full protobuf type definitions with compile-time checking
@@ -96,7 +93,7 @@ let token = std::env::var("AUTH_TOKEN")?;
 ### Creating a Client
 
 ```rust
-use thor_grpc_client::{ClientConfig, ThorClient};
+use thorstreamer_grpc_client::{ClientConfig, ThorClient};
 use std::time::Duration;
 
 let config = ClientConfig {
@@ -111,22 +108,20 @@ let client = ThorClient::new(config).await?;
 ### Subscribe to Transactions
 
 ```rust
-use thor_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
+use thorstreamer_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
 
 let mut stream = client.subscribe_to_transactions().await?;
 
 while let Some(response) = stream.message().await? {
     let msg = parse_message(&response.data)?;
-    
-    if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-        if let Some(tx) = tx_wrapper.transaction {
-            let sig_hex = tx.signature.iter()
-                .take(8)
-                .map(|b| format!("{:02x}", b))
-                .collect::<Vec<_>>()
-                .join("");
-            println!("Transaction: slot={}, signature={}", tx.slot, sig_hex);
-        }
+
+    if let Some(EventMessage::Transaction(tx)) = msg.event_message {
+        let sig_hex = tx.signature.iter()
+            .take(8)
+            .map(|b| format!("{:02x}", b))
+            .collect::<Vec<_>>()
+            .join("");
+        println!("Transaction: slot={}, signature={}", tx.slot, sig_hex);
     }
 }
 ```
@@ -138,33 +133,10 @@ let mut stream = client.subscribe_to_slot_status().await?;
 
 while let Some(response) = stream.message().await? {
     let msg = parse_message(&response.data)?;
-    
+
     if let Some(EventMessage::Slot(slot)) = msg.event_message {
-        println!("Slot: slot={}, status={}, height={}", 
+        println!("Slot: slot={}, status={}, height={}",
             slot.slot, slot.status, slot.block_height);
-    }
-}
-```
-
-### Subscribe to Wallet Transactions
-
-Monitor specific wallet addresses (max 10 per request):
-
-```rust
-let wallets = vec![
-    "wallet1base58address...".to_string(),
-    "wallet2base58address...".to_string(),
-];
-
-let mut stream = client.subscribe_to_wallet_transactions(wallets).await?;
-
-while let Some(response) = stream.message().await? {
-    let msg = parse_message(&response.data)?;
-    
-    if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-        if let Some(tx) = tx_wrapper.transaction {
-            println!("Wallet transaction: slot={}", tx.slot);
-        }
     }
 }
 ```
@@ -181,14 +153,14 @@ let mut stream = client.subscribe_to_account_updates(accounts, owners).await?;
 
 while let Some(response) = stream.message().await? {
     let msg = parse_message(&response.data)?;
-    
+
     if let Some(EventMessage::AccountUpdate(update)) = msg.event_message {
         let pubkey_hex = update.pubkey.iter()
             .take(8)
             .map(|b| format!("{:02x}", b))
             .collect::<Vec<_>>()
             .join("");
-        println!("Account: pubkey={}, lamports={}", 
+        println!("Account: pubkey={}, lamports={}",
             pubkey_hex, update.lamports);
     }
 }
@@ -243,8 +215,8 @@ cargo run --example subscribe
 
 ```toml
 [package]
-name = "thor-grpc-client"
-version = "0.1.0"
+name = "thorstreamer-grpc-client"
+version = "0.1.2"
 edition = "2021"
 
 [dependencies]
@@ -266,12 +238,9 @@ The SDK uses `tonic-build` to generate Rust code from protobuf definitions at co
 
 ## Version History
 
+- `v0.1.2` - Simplified proto schema, removed deprecated types
+- `v0.1.1` - Fixed repository link in crate metadata
 - `v0.1.0` - Initial release
-    - Transaction streaming
-    - Slot status updates
-    - Wallet tracking
-    - Account updates with owner filtering
-    - Async/await support with Tokio
 
 ## Contributing
 
@@ -290,6 +259,6 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 ## Support
 
 - **GitHub Issues**: [https://github.com/thorlabsDev/ThorStreamer/issues](https://github.com/thorlabsDev/ThorStreamer/issues)
-- **Documentation**: [https://docs.rs/thor-grpc-client](https://docs.rs/thor-grpc-client)
-- **Crates.io**: [https://crates.io/crates/thor-grpc-client](https://crates.io/crates/thor-grpc-client)
+- **Documentation**: [https://docs.rs/thorstreamer-grpc-client](https://docs.rs/thorstreamer-grpc-client)
+- **Crates.io**: [https://crates.io/crates/thorstreamer-grpc-client](https://crates.io/crates/thorstreamer-grpc-client)
 - **Main Repository**: [https://github.com/thorlabsDev/ThorStreamer](https://github.com/thorlabsDev/ThorStreamer)
