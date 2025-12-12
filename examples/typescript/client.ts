@@ -7,7 +7,6 @@ import base58 from "bs58";
 // Import all proto definitions from the consolidated index
 import {
   EventPublisherClient,
-  SubscribeWalletRequest,
   SubscribeAccountsRequest,
   MessageWrapper,
   TransactionEvent,
@@ -382,12 +381,9 @@ class ThorStreamerClient {
 
         // Check each possible case
         if (eventCase === MessageWrapper.EventMessageCase.TRANSACTION) {
-          const txWrapper = msgWrapper.getTransaction();
-          if (txWrapper?.hasTransaction()) {
-            const transaction = txWrapper.getTransaction();
-            if (transaction) {
-              this.debugTransaction(transaction);
-            }
+          const transaction = msgWrapper.getTransaction();
+          if (transaction) {
+            this.debugTransaction(transaction);
           }
         } else if (eventCase === MessageWrapper.EventMessageCase.SLOT) {
           console.log("⚠️ Received SLOT event in transaction stream");
@@ -446,47 +442,6 @@ class ThorStreamerClient {
 
     slotStream.on("end", () => {
       console.log("ℹ️  Slot stream ended.");
-    });
-  }
-
-  private async subscribeToWalletTransactions(walletAddresses: string[]): Promise<void> {
-    console.log(`\n🔍 Subscribing to wallet transactions...`);
-    console.log(`   Wallets: ${walletAddresses.join(", ")}`);
-
-    const request = new SubscribeWalletRequest();
-    request.setWalletAddressList(walletAddresses);
-
-    const walletStream = this.client.subscribeToWalletTransactions(request, this.metadata);
-
-    walletStream.on("data", (resp: any) => {
-      try {
-        const binaryData = resp.data || resp.getData?.() || resp;
-        const msgWrapper = MessageWrapper.deserializeBinary(binaryData);
-
-        const eventCase = msgWrapper.getEventMessageCase();
-
-        if (eventCase === MessageWrapper.EventMessageCase.TRANSACTION) {
-          const txWrapper = msgWrapper.getTransaction();
-          if (txWrapper && txWrapper.hasTransaction()) {
-            const transaction = txWrapper.getTransaction();
-            if (transaction) {
-              this.debugTransaction(transaction);
-            }
-          }
-        } else {
-          console.log(`⚠️ Received event case ${eventCase} instead of transaction`);
-        }
-      } catch (error) {
-        console.error("❌ Failed to deserialize MessageWrapper:", error);
-      }
-    });
-
-    walletStream.on("error", (error: grpc.ServiceError) => {
-      console.error("❌ Wallet stream error:", error.message);
-    });
-
-    walletStream.on("end", () => {
-      console.log("ℹ️  Wallet stream ended.");
     });
   }
 
@@ -554,11 +509,10 @@ class ThorStreamerClient {
     console.log("Select subscription method:");
     console.log("  1️⃣  All Transactions");
     console.log("  2️⃣  Slot Status Updates");
-    console.log("  3️⃣  Wallet Transactions");
-    console.log("  4️⃣  Account Updates");
+    console.log("  3️⃣  Account Updates");
     console.log("  0️⃣  Exit");
 
-    const choice = await this.question("\n▶️  Enter your choice (0-4): ");
+    const choice = await this.question("\n▶️  Enter your choice (0-3): ");
 
     switch (choice.trim()) {
       case "1":
@@ -570,22 +524,6 @@ class ThorStreamerClient {
         break;
 
       case "3":
-        const walletInput = await this.question("\n📝 Enter wallet addresses (comma-separated): ");
-        const wallets = walletInput
-            .split(",")
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
-
-        if (wallets.length === 0) {
-          console.log("❌ No wallet addresses provided!");
-          this.shutdown();
-          return;
-        }
-
-        await this.subscribeToWalletTransactions(wallets);
-        break;
-
-      case "4":
         const accountInput = await this.question(
             "\n📝 Enter account addresses to monitor (comma-separated, or press Enter to skip): "
         );

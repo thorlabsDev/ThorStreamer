@@ -26,7 +26,7 @@ use proto::thor_streamer::types::Empty as ThorEmpty;
 
 use proto::publisher::{
     event_publisher_client::EventPublisherClient,
-    SubscribeAccountsRequest, SubscribeWalletRequest, StreamResponse,
+    SubscribeAccountsRequest, StreamResponse,
 };
 use proto::thor_streamer::types::{
     thor_streamer_client::ThorStreamerClient,
@@ -97,21 +97,6 @@ impl ThorClient {
     pub async fn subscribe_to_slot_status(&mut self) -> Result<Streaming<StreamResponse>, Status> {
         let request = self.with_auth(GoogleEmpty {});
         let response = self.event_client.subscribe_to_slot_status(request).await?;
-        Ok(response.into_inner())
-    }
-
-    /// Subscribe to wallet transaction events
-    pub async fn subscribe_to_wallet_transactions(
-        &mut self,
-        wallet_addresses: Vec<String>,
-    ) -> Result<Streaming<StreamResponse>, Status> {
-        let request = self.with_auth(SubscribeWalletRequest {
-            wallet_address: wallet_addresses,
-        });
-        let response = self
-            .event_client
-            .subscribe_to_wallet_transactions(request)
-            .await?;
         Ok(response.into_inner())
     }
 

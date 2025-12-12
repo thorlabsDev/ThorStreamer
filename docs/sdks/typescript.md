@@ -99,26 +99,6 @@ stream.on('data', (response: StreamResponse) => {
 });
 ```
 
-### subscribeToWalletTransactions
-
-Monitor up to 10 wallet addresses:
-
-```typescript
-import { SubscribeWalletRequest } from './proto/publisher_pb';
-
-const request = new SubscribeWalletRequest();
-request.setWalletAddressList([
-    '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM',
-    '2ojv9BAiHUrvsm9gxDe7fJSzbNZSJcxZvf8dqmWGHG8S',
-]);
-
-const stream = client.subscribeToWalletTransactions(request, metadata);
-
-stream.on('data', (response: StreamResponse) => {
-    console.log('Wallet transaction received');
-});
-```
-
 ### subscribeToAccountUpdates
 
 Monitor accounts with optional owner filtering:

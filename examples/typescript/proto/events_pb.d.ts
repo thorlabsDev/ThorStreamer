@@ -115,28 +115,6 @@ export namespace SubscribeUpdateAccountInfo {
     }
 }
 
-export class ThorAccountsRequest extends jspb.Message { 
-    clearAccountAddressList(): void;
-    getAccountAddressList(): Array<string>;
-    setAccountAddressList(value: Array<string>): ThorAccountsRequest;
-    addAccountAddress(value: string, index?: number): string;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ThorAccountsRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: ThorAccountsRequest): ThorAccountsRequest.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: ThorAccountsRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ThorAccountsRequest;
-    static deserializeBinaryFromReader(message: ThorAccountsRequest, reader: jspb.BinaryReader): ThorAccountsRequest;
-}
-
-export namespace ThorAccountsRequest {
-    export type AsObject = {
-        accountAddressList: Array<string>,
-    }
-}
-
 export class SlotStatusEvent extends jspb.Message { 
     getSlot(): number;
     setSlot(value: number): SlotStatusEvent;
@@ -638,32 +616,6 @@ export namespace TransactionStatusMeta {
     }
 }
 
-export class TransactionEventWrapper extends jspb.Message { 
-    getStreamType(): StreamType;
-    setStreamType(value: StreamType): TransactionEventWrapper;
-
-    hasTransaction(): boolean;
-    clearTransaction(): void;
-    getTransaction(): TransactionEvent | undefined;
-    setTransaction(value?: TransactionEvent): TransactionEventWrapper;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TransactionEventWrapper.AsObject;
-    static toObject(includeInstance: boolean, msg: TransactionEventWrapper): TransactionEventWrapper.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TransactionEventWrapper, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TransactionEventWrapper;
-    static deserializeBinaryFromReader(message: TransactionEventWrapper, reader: jspb.BinaryReader): TransactionEventWrapper;
-}
-
-export namespace TransactionEventWrapper {
-    export type AsObject = {
-        streamType: StreamType,
-        transaction?: TransactionEvent.AsObject,
-    }
-}
-
 export class MessageWrapper extends jspb.Message { 
 
     hasAccountUpdate(): boolean;
@@ -678,8 +630,8 @@ export class MessageWrapper extends jspb.Message {
 
     hasTransaction(): boolean;
     clearTransaction(): void;
-    getTransaction(): TransactionEventWrapper | undefined;
-    setTransaction(value?: TransactionEventWrapper): MessageWrapper;
+    getTransaction(): TransactionEvent | undefined;
+    setTransaction(value?: TransactionEvent): MessageWrapper;
 
     getEventMessageCase(): MessageWrapper.EventMessageCase;
 
@@ -697,7 +649,7 @@ export namespace MessageWrapper {
     export type AsObject = {
         accountUpdate?: SubscribeUpdateAccountInfo.AsObject,
         slot?: SlotStatusEvent.AsObject,
-        transaction?: TransactionEventWrapper.AsObject,
+        transaction?: TransactionEvent.AsObject,
     }
 
     export enum EventMessageCase {
@@ -707,11 +659,4 @@ export namespace MessageWrapper {
         TRANSACTION = 3,
     }
 
-}
-
-export enum StreamType {
-    STREAM_TYPE_UNSPECIFIED = 0,
-    STREAM_TYPE_FILTERED = 1,
-    STREAM_TYPE_WALLET = 2,
-    STREAM_TYPE_ACCOUNT = 3,
 }

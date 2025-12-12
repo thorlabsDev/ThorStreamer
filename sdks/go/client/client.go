@@ -38,10 +38,6 @@ type SlotStream struct {
 	stream pb.EventPublisher_SubscribeToSlotStatusClient
 }
 
-type WalletStream struct {
-	stream pb.EventPublisher_SubscribeToWalletTransactionsClient
-}
-
 type AccountStream struct {
 	stream pb.EventPublisher_SubscribeToAccountUpdatesClient
 }
@@ -124,34 +120,6 @@ func (c *Client) SubscribeToSlotStatus(ctx context.Context) (*SlotStream, error)
 // Recv receives the next slot status message
 func (ss *SlotStream) Recv() (*pb.MessageWrapper, error) {
 	resp, err := ss.stream.Recv()
-	if err != nil {
-		return nil, err
-	}
-
-	var wrapper pb.MessageWrapper
-	if err := proto.Unmarshal(resp.Data, &wrapper); err != nil { // Changed here
-		return nil, fmt.Errorf("failed to unmarshal: %w", err)
-	}
-	return &wrapper, nil
-}
-
-// WalletStream represents a wallet transaction subscription
-
-// SubscribeToWalletTransactions subscribes to wallet transaction events
-func (c *Client) SubscribeToWalletTransactions(ctx context.Context, wallets []string) (*WalletStream, error) {
-	authCtx := c.contextWithAuth(ctx)
-	req := &pb.SubscribeWalletRequest{WalletAddress: wallets}
-	stream, err := c.eventClient.SubscribeToWalletTransactions(authCtx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to subscribe: %w", err)
-	}
-
-	return &WalletStream{stream: stream}, nil
-}
-
-// Recv receives the next wallet transaction message
-func (ws *WalletStream) Recv() (*pb.MessageWrapper, error) {
-	resp, err := ws.stream.Recv()
 	if err != nil {
 		return nil, err
 	}

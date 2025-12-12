@@ -19,7 +19,7 @@ message MessageWrapper {
   oneof event_message {
     SubscribeUpdateAccountInfo account_update = 1;
     SlotStatusEvent slot = 2;
-    TransactionEventWrapper transaction = 3;
+    TransactionEvent transaction = 3;
   }
 }
 ```
@@ -27,22 +27,6 @@ message MessageWrapper {
 ---
 
 ## Transaction Events
-
-### TransactionEventWrapper
-
-```protobuf
-message TransactionEventWrapper {
-  StreamType stream_type = 1;
-  TransactionEvent transaction = 2;
-}
-
-enum StreamType {
-  STREAM_TYPE_UNSPECIFIED = 0;
-  STREAM_TYPE_FILTERED = 1;    // From program filters
-  STREAM_TYPE_WALLET = 2;      // From wallet subscription
-  STREAM_TYPE_ACCOUNT = 3;     // From account subscription
-}
-```
 
 ### TransactionEvent
 

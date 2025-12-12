@@ -18,8 +18,6 @@
 | `TRANSACTION_SUBSCRIPTION_LIMIT_REACHED` | Transaction streams exceeded | 2 max |
 | `ACCOUNT_SUBSCRIPTION_LIMIT_REACHED` | Account streams exceeded | 5 max |
 | `SLOT_SUBSCRIPTION_LIMIT_REACHED` | Slot streams exceeded | 2 max |
-| `WALLET_SUBSCRIPTION_LIMIT_REACHED` | Wallet streams exceeded | 10 max |
-| `TOO_MANY_WALLET_ADDRESSES` | Addresses in request exceeded | 10 per request |
 | `TOO_MANY_ACCOUNT_ADDRESSES` | Accounts in request exceeded | 100 per request |
 
 ### Connection Errors
@@ -36,9 +34,7 @@
 | Error | Description | Action |
 |-------|-------------|--------|
 | `INVALID_REQUEST` | Malformed request | Check request format |
-| `INVALID_WALLET_ADDRESS` | Bad wallet address format | Use valid Base58 address |
 | `INVALID_ACCOUNT_ADDRESS` | Bad account address format | Use valid Base58 address |
-| `EMPTY_WALLET_LIST` | No wallets provided | Add at least one wallet |
 | `EMPTY_ACCOUNT_LIST` | No accounts provided | Add at least one account |
 
 ### Server Errors

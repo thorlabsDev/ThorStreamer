@@ -47,10 +47,8 @@ func main() {
 	// Example 2: Subscribe to slot status
 	go subscribeToSlots(ctx, client)
 
-	// Example 3: Subscribe to wallet transactions
-	go subscribeToWallets(ctx, client, []string{
-		"YourWalletAddressHere",
-	})
+	// Note: SubscribeToWalletTransactions is not available in the current proto.
+	// Use SubscribeToAccountUpdates with owner addresses for similar functionality.
 
 	// Example 4: Subscribe to account updates
 	go subscribeToAccounts(ctx, client, []string{
@@ -89,8 +87,8 @@ func subscribeToTransactions(ctx context.Context, client *thorclient.Client) {
 
 		if tx := msg.GetTransaction(); tx != nil {
 			log.Printf("Received transaction: slot=%d, signature=%x",
-				tx.Transaction.Slot,
-				tx.Transaction.Signature[:8])
+				tx.Slot,
+				tx.Signature[:8])
 		}
 	}
 }
@@ -121,32 +119,8 @@ func subscribeToSlots(ctx context.Context, client *thorclient.Client) {
 	}
 }
 
-func subscribeToWallets(ctx context.Context, client *thorclient.Client, wallets []string) {
-	stream, err := client.SubscribeToWalletTransactions(ctx, wallets)
-	if err != nil {
-		log.Printf("Failed to subscribe to wallets: %v", err)
-		return
-	}
-
-	log.Printf("Subscribed to %d wallets", len(wallets))
-	for {
-		msg, err := stream.Recv()
-		if err != nil {
-			if thorclient.IsStreamDone(err) {
-				log.Println("Wallet stream closed")
-				return
-			}
-			log.Printf("Error receiving wallet transaction: %v", err)
-			return
-		}
-
-		if tx := msg.GetTransaction(); tx != nil {
-			log.Printf("Received wallet transaction: slot=%d, signature=%x",
-				tx.Transaction.Slot,
-				tx.Transaction.Signature[:8])
-		}
-	}
-}
+// Note: SubscribeToWalletTransactions is not available in the current proto definition.
+// Use SubscribeToAccountUpdates with owner addresses for similar functionality.
 
 func subscribeToAccounts(ctx context.Context, client *thorclient.Client, accounts, owners []string) {
 	stream, err := client.SubscribeToAccountUpdates(ctx, accounts, owners)
@@ -200,7 +174,7 @@ func subscribeToThorUpdates(ctx context.Context, client *thorclient.Client) {
 			log.Printf("Thor slot: slot=%d, status=%d", slot.Slot, slot.Status)
 		case msg.GetTransaction() != nil:
 			tx := msg.GetTransaction()
-			log.Printf("Thor transaction: slot=%d", tx.Transaction.Slot)
+			log.Printf("Thor transaction: slot=%d", tx.Slot)
 		case msg.GetAccountUpdate() != nil:
 			acc := msg.GetAccountUpdate()
 			log.Printf("Thor account: lamports=%d", acc.Lamports)

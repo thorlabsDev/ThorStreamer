@@ -106,28 +106,6 @@ for {
 }
 ```
 
-### SubscribeToWalletTransactions
-
-Monitor up to 10 wallet addresses:
-
-```go
-wallets := []string{
-    "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
-    "2ojv9BAiHUrvsm9gxDe7fJSzbNZSJcxZvf8dqmWGHG8S",
-}
-stream, err := client.SubscribeToWalletTransactions(ctx, wallets)
-
-for {
-    msg, err := stream.Recv()
-    if err != nil {
-        break
-    }
-    if tx := msg.GetTransaction(); tx != nil {
-        log.Printf("Wallet tx: slot=%d", tx.Transaction.Slot)
-    }
-}
-```
-
 ### SubscribeToAccountUpdates
 
 Monitor accounts with optional owner filtering:

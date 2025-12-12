@@ -38,17 +38,6 @@ function deserialize_publisher_SubscribeAccountsRequest(buffer_arg) {
   return publisher_pb.SubscribeAccountsRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_publisher_SubscribeWalletRequest(arg) {
-  if (!(arg instanceof publisher_pb.SubscribeWalletRequest)) {
-    throw new Error('Expected argument of type publisher.SubscribeWalletRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_publisher_SubscribeWalletRequest(buffer_arg) {
-  return publisher_pb.SubscribeWalletRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
 
 var EventPublisherService = exports.EventPublisherService = {
   subscribeToTransactions: {
@@ -73,19 +62,7 @@ var EventPublisherService = exports.EventPublisherService = {
     responseSerialize: serialize_publisher_StreamResponse,
     responseDeserialize: deserialize_publisher_StreamResponse,
   },
-  subscribeToWalletTransactions: {
-    path: '/publisher.EventPublisher/SubscribeToWalletTransactions',
-    requestStream: false,
-    responseStream: true,
-    requestType: publisher_pb.SubscribeWalletRequest,
-    responseType: publisher_pb.StreamResponse,
-    requestSerialize: serialize_publisher_SubscribeWalletRequest,
-    requestDeserialize: deserialize_publisher_SubscribeWalletRequest,
-    responseSerialize: serialize_publisher_StreamResponse,
-    responseDeserialize: deserialize_publisher_StreamResponse,
-  },
-  // NEW method to subscribe to account updates
-subscribeToAccountUpdates: {
+  subscribeToAccountUpdates: {
     path: '/publisher.EventPublisher/SubscribeToAccountUpdates',
     requestStream: false,
     responseStream: true,

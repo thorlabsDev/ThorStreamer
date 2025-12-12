@@ -32,12 +32,6 @@ message SubscribeUpdateAccountInfo {
   optional SlotStatus slot = 9;
 }
 
-// Request message for subscribing to account updates.
-message ThorAccountsRequest {
-  repeated string account_address = 1;
-}
-
-
 // -----------------------------------------------------------------------------
 // Slot Status Events - Optimized
 // -----------------------------------------------------------------------------
@@ -160,23 +154,12 @@ message TransactionStatusMeta {
   string error_info = 10;
 }
 
-enum StreamType {
-  STREAM_TYPE_UNSPECIFIED = 0;
-  STREAM_TYPE_FILTERED = 1;
-  STREAM_TYPE_WALLET = 2;
-  STREAM_TYPE_ACCOUNT = 3;
-}
-
-message TransactionEventWrapper {
-  StreamType stream_type = 1;
-  TransactionEvent transaction = 2;
-}
-
+// MessageWrapper is the top-level envelope for all event types
 message MessageWrapper {
   oneof event_message {
     SubscribeUpdateAccountInfo account_update = 1;
     SlotStatusEvent slot = 2;
-    TransactionEventWrapper transaction = 3;
+    TransactionEvent transaction = 3;
   }
 }
 

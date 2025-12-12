@@ -176,20 +176,19 @@ func main() {
 			continue
 		}
 
-		// event_message is a oneof: check if it’s a transaction
-		txWrapper, ok := eventMessage.(*pb.MessageWrapper_Transaction)
+		// event_message is a oneof: check if it's a transaction
+		txEvent, ok := eventMessage.(*pb.MessageWrapper_Transaction)
 		if !ok {
 			log.Println("Received a message that is not a transaction event")
 			continue
 		}
 
-		if txWrapper.Transaction == nil || txWrapper.Transaction.Transaction == nil {
-			log.Println("No actual transaction found in TransactionEventWrapper")
+		if txEvent.Transaction == nil {
+			log.Println("No transaction found in MessageWrapper")
 			continue
 		}
 
-		// txWrapper.Transaction.Transaction is the actual TransactionEvent
-		debugTransaction(txWrapper.Transaction.Transaction)
+		debugTransaction(txEvent.Transaction)
 		fmt.Println("└─ End Debug Info\n")
 	}
 }

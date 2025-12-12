@@ -10,13 +10,11 @@ Each authentication token (client) is limited to:
 | Transaction streams | 2 max |
 | Account update streams | 5 max |
 | Slot status streams | 2 max |
-| Wallet transaction streams | 10 max |
 
 ### Per-Subscription Limits
 
 | Subscription Type | Limit |
 |-------------------|-------|
-| Wallet addresses per request | 10 |
 | Account addresses per request | 100 |
 
 ---
@@ -81,7 +79,6 @@ If experiencing disconnections:
 | Use Case | Recommended Service |
 |----------|---------------------|
 | Monitor specific programs | EventPublisher: `SubscribeToTransactions` |
-| Track wallet activity | EventPublisher: `SubscribeToWalletTransactions` |
 | Monitor account states | EventPublisher: `SubscribeToAccountUpdates` |
 | Block confirmations | EventPublisher: `SubscribeToSlotStatus` |
 | All data, high-performance infra | ThorStreamer: `StreamUpdates` |

@@ -70,28 +70,6 @@ rpc SubscribeToSlotStatus(Empty) returns (stream StreamResponse)
 
 ---
 
-### SubscribeToWalletTransactions
-
-Stream transactions involving specific wallet addresses.
-
-```protobuf
-rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream StreamResponse)
-```
-
-**Input**:
-```protobuf
-message SubscribeWalletRequest {
-  repeated string wallet_address = 1;  // Base58 addresses (max 10)
-}
-```
-
-**Use cases**:
-- Wallet activity monitoring
-- User transaction tracking
-- Portfolio analytics
-
----
-
 ## ThorStreamer Service
 
 High-throughput unified stream combining all event types. **Requires robust infrastructure.**
@@ -105,7 +83,7 @@ rpc StreamUpdates(Empty) returns (stream MessageWrapper)
 ```
 
 **Output**: Stream containing one of:
-- `TransactionEventWrapper` — Transaction data with stream type
+- `TransactionEvent` — Transaction data
 - `SubscribeUpdateAccountInfo` — Account state changes
 - `SlotStatusEvent` — Slot progression
 

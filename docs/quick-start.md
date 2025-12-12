@@ -93,10 +93,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     while let Some(response) = stream.message().await? {
         let msg = parse_message(&response.data)?;
-        if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-            if let Some(tx) = tx_wrapper.transaction {
-                println!("Transaction: slot={}", tx.slot);
-            }
+        if let Some(EventMessage::Transaction(tx)) = msg.event_message {
+            println!("Transaction: slot={}", tx.slot);
         }
     }
     Ok(())

@@ -39,7 +39,7 @@ use google::protobuf::Empty as GoogleEmpty;
 
 // The client from `publisher.proto`:
 use publisher::event_publisher_client::EventPublisherClient;
-use publisher::{SubscribeWalletRequest, SubscribeAccountsRequest};
+use publisher::SubscribeAccountsRequest;
 
 // Local types from events.proto
 use thor_streamer::types::{Message, MessageWrapper, SlotStatusEvent, TransactionEvent, SubscribeUpdateAccountInfo};
@@ -394,12 +394,8 @@ where
     while let Some(resp) = stream.message().await? {
         let msg_wrapper = MessageWrapper::decode(&resp.data[..])?;
 
-        if let Some(EventMessage::Transaction(tx_wrapper)) = msg_wrapper.event_message {
-            if let Some(tx) = tx_wrapper.transaction {
-                debug_transaction(&tx);
-            } else {
-                println!("Transaction in wrapper is None");
-            }
+        if let Some(EventMessage::Transaction(tx)) = msg_wrapper.event_message {
+            debug_transaction(&tx);
         } else {
             println!("Received a non-transaction event");
         }
@@ -436,47 +432,6 @@ where
             debug_slot_event(&slot_event);
         } else {
             println!("Received a non-slot event from SubscribeToSlotStatus");
-        }
-    }
-
-    Ok(())
-}
-
-/// Subscribes to wallet transaction events for specified wallet addresses and debugs each event.
-///
-/// # Arguments
-///
-/// * `client` - A gRPC client for the `EventPublisher` service.
-/// * `wallet_addresses` - A vector of wallet addresses (as strings) to subscribe to.
-///
-/// # Returns
-///
-/// * `Ok(())` if the subscription and debugging complete successfully; otherwise an error.
-async fn subscribe_to_wallet_transactions<T>(
-    mut client: EventPublisherClient<T>,
-    wallet_addresses: Vec<String>,
-) -> Result<(), Box<dyn std::error::Error>>
-where
-    T: tonic::client::GrpcService<tonic::body::BoxBody>,
-    T::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-    T::ResponseBody: Body<Data = tonic::codegen::Bytes> + Send + 'static,
-    <T::ResponseBody as Body>::Error: Into<Box<dyn std::error::Error + Send + Sync>> + Send,
-{
-    let request = Request::new(SubscribeWalletRequest {
-        wallet_address: wallet_addresses,
-    });
-
-    let mut stream = client.subscribe_to_wallet_transactions(request).await?.into_inner();
-
-    while let Some(resp) = stream.message().await? {
-        let msg_wrapper = MessageWrapper::decode(&resp.data[..])?;
-
-        if let Some(EventMessage::Transaction(tx_wrapper)) = msg_wrapper.event_message {
-            if let Some(tx) = tx_wrapper.transaction {
-                debug_transaction(&tx);
-            }
-        } else {
-            println!("Received a non-transaction event");
         }
     }
 
@@ -552,8 +507,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Select subscription method:");
     println!("1: All Transactions");
     println!("2: Slot Status Updates");
-    println!("3: Wallet Transactions");
-    println!("4: Account Updates");
+    println!("3: Account Updates");
 
     let mut choice = String::new();
     io::stdin().read_line(&mut choice)?;
@@ -563,13 +517,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         1 => subscribe_to_transactions(publisher_client).await?,
         2 => subscribe_to_slots(publisher_client).await?,
         3 => {
-            println!("Enter wallet addresses (comma-separated):");
-            let mut input = String::new();
-            io::stdin().read_line(&mut input)?;
-            let wallets: Vec<String> = input.trim().split(',').map(|s| s.trim().to_string()).collect();
-            subscribe_to_wallet_transactions(publisher_client, wallets).await?
-        }
-        4 => {
             println!("Enter account addresses to monitor (comma-separated, or press Enter to skip):");
             let mut account_input = String::new();
             io::stdin().read_line(&mut account_input)?;

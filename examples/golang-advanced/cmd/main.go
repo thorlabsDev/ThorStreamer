@@ -60,14 +60,13 @@ func main() {
 		fmt.Println("1. Program-filtered Transactions")
 		fmt.Println("2. Account Updates")
 		fmt.Println("3. Slot Status")
-		fmt.Println("4. Wallet Transactions")
-		fmt.Println("5. Exit")
+		fmt.Println("4. Exit")
 
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			choice := utils.Prompt("\nEnter your choice (1-5): ")
+			choice := utils.Prompt("\nEnter your choice (1-4): ")
 
 			switch choice {
 			case "1":
@@ -83,10 +82,6 @@ func main() {
 					return handlers.SubscribeToSlotStatus(ctx, eventClient)
 				})
 			case "4":
-				client.HandleSubscription(ctx, func() error {
-					return handlers.SubscribeToWalletTransactions(ctx, eventClient)
-				})
-			case "5":
 				fmt.Println("Exiting...")
 				return
 			default:

@@ -50,12 +50,10 @@ func SubscribeToFilteredTransactions(ctx context.Context, client pb.EventPublish
 		// Check if this is a transaction event
 		switch msgWrapper.EventMessage.(type) {
 		case *pb.MessageWrapper_Transaction:
-			txWrapper := msgWrapper.GetTransaction()
-			if txWrapper == nil || txWrapper.Transaction == nil {
+			tx := msgWrapper.GetTransaction()
+			if tx == nil {
 				continue
 			}
-
-			tx := txWrapper.Transaction
 
 			if !txFilter.WantsTransaction(tx) {
 				continue
@@ -81,57 +79,6 @@ func SubscribeToFilteredTransactions(ctx context.Context, client pb.EventPublish
 			printer.PrintTransaction(tx)
 		default:
 			// Not a transaction event, skip
-			continue
-		}
-	}
-}
-
-// SubscribeToWalletTransactions subscribes to wallet-specific transactions
-func SubscribeToWalletTransactions(ctx context.Context, client pb.EventPublisherClient) error {
-	wallets, err := utils.GetUserWallets()
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("\n📡 Monitoring transactions for %d wallets:\n", len(wallets))
-	for i, wallet := range wallets {
-		fmt.Printf("%d. %s\n", i+1, wallet)
-	}
-	fmt.Println("----------------------------------")
-
-	stream, err := client.SubscribeToWalletTransactions(ctx, &pb.SubscribeWalletRequest{
-		WalletAddress: wallets,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to subscribe to wallet transactions: %v", err)
-	}
-
-	for {
-		resp, err := stream.Recv()
-		if err != nil {
-			return err
-		}
-
-		var msgWrapper pb.MessageWrapper
-		if err := proto.Unmarshal(resp.Data, &msgWrapper); err != nil {
-			log.Printf("Failed to unmarshal MessageWrapper: %v", err)
-			continue
-		}
-
-		// Check if this is a transaction event
-		switch msgWrapper.EventMessage.(type) {
-		case *pb.MessageWrapper_Transaction:
-			txWrapper := msgWrapper.GetTransaction()
-			if txWrapper == nil || txWrapper.Transaction == nil {
-				continue
-			}
-
-			if txWrapper.StreamType != pb.StreamType_STREAM_TYPE_WALLET {
-				continue
-			}
-
-			printer.PrintDetailedTransaction(txWrapper.Transaction)
-		default:
 			continue
 		}
 	}

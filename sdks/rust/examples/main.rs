@@ -1,5 +1,5 @@
 // examples/main.rs
-use thor_grpc_client::{ClientConfig, ThorClient, parse_message};
+use thorstreamer_grpc_client::{ClientConfig, ThorClient, parse_message};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -40,22 +40,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn subscribe_transactions(mut client: ThorClient) -> Result<(), Box<dyn std::error::Error>> {
-    use thor_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
+    use thorstreamer_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
 
     println!("Subscribed to transactions");
     let mut stream = client.subscribe_to_transactions().await?;
 
     while let Some(response) = stream.message().await? {
         let msg = parse_message(&response.data)?;
-        if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-            if let Some(tx) = tx_wrapper.transaction {
-                let sig_hex = tx.signature.iter()
-                    .take(8)
-                    .map(|b| format!("{:02x}", b))
-                    .collect::<Vec<_>>()
-                    .join("");
-                println!("Received transaction: slot={}, signature={}", tx.slot, sig_hex);
-            }
+        if let Some(EventMessage::Transaction(tx)) = msg.event_message {
+            let sig_hex = tx.signature.iter()
+                .take(8)
+                .map(|b| format!("{:02x}", b))
+                .collect::<Vec<_>>()
+                .join("");
+            println!("Received transaction: slot={}, signature={}", tx.slot, sig_hex);
         }
     }
 
@@ -63,7 +61,7 @@ async fn subscribe_transactions(mut client: ThorClient) -> Result<(), Box<dyn st
 }
 
 async fn subscribe_slots(mut client: ThorClient) -> Result<(), Box<dyn std::error::Error>> {
-    use thor_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
+    use thorstreamer_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
 
     println!("Subscribed to slots");
     let mut stream = client.subscribe_to_slot_status().await?;
@@ -79,32 +77,16 @@ async fn subscribe_slots(mut client: ThorClient) -> Result<(), Box<dyn std::erro
     Ok(())
 }
 
-async fn subscribe_wallets(mut client: ThorClient) -> Result<(), Box<dyn std::error::Error>> {
-    use thor_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
-
-    let wallets = vec!["YourWalletAddressHere".to_string()];
-    println!("Subscribed to {} wallets", wallets.len());
-    let mut stream = client.subscribe_to_wallet_transactions(wallets).await?;
-
-    while let Some(response) = stream.message().await? {
-        let msg = parse_message(&response.data)?;
-        if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-            if let Some(tx) = tx_wrapper.transaction {
-                let sig_hex = tx.signature.iter()
-                    .take(8)
-                    .map(|b| format!("{:02x}", b))
-                    .collect::<Vec<_>>()
-                    .join("");
-                println!("Received wallet transaction: slot={}, signature={}", tx.slot, sig_hex);
-            }
-        }
-    }
-
+// Note: subscribe_to_wallet_transactions is not available in the current proto.
+// Use subscribe_to_account_updates with owner addresses for similar functionality.
+async fn subscribe_wallets(_client: ThorClient) -> Result<(), Box<dyn std::error::Error>> {
+    println!("Wallet subscription is not available in current proto.");
+    println!("Use account updates with owner addresses instead.");
     Ok(())
 }
 
 async fn subscribe_accounts(mut client: ThorClient) -> Result<(), Box<dyn std::error::Error>> {
-    use thor_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
+    use thorstreamer_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
 
     let accounts = vec!["AccountAddress1".to_string()];
     let owners = vec!["OwnerAddress1".to_string()];

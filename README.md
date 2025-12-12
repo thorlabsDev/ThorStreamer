@@ -18,9 +18,8 @@ ThorStreamer is a high-performance gRPC service providing real-time access to So
 ## Features
 
 - Real-time transaction streaming with program filtering
-- Account state change notifications
+- Account state change notifications with owner filtering
 - Slot status monitoring
-- Wallet-specific transaction tracking
 - Automatic reconnection handling
 - Protocol Buffer message encoding
 - SSL/TLS encryption
@@ -50,12 +49,7 @@ service ThorStreamer {
 service EventPublisher {
   rpc SubscribeToTransactions(google.protobuf.Empty) returns (stream StreamResponse) {}
   rpc SubscribeToSlotStatus(google.protobuf.Empty) returns (stream StreamResponse) {}
-  rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream StreamResponse) {}
   rpc SubscribeToAccountUpdates(SubscribeAccountsRequest) returns (stream StreamResponse) {}
-}
-
-message SubscribeWalletRequest {
-  repeated string wallet_address = 1; // Array of Base58 encoded wallet addresses, max 10
 }
 
 message SubscribeAccountsRequest {
@@ -88,33 +82,35 @@ message SubscribeAccountsRequest {
     - Market making and trading strategies
 
 
-| Program Name                   | Program ID |
-|--------------------------------|---|
-| Fluxbeam                       | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X` |
-| game.com                       | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
-| Lifinity V2                    | `2wT8Yq49kHgDzXuPxZSaeLaH1qbmGXtEyPy64bL7aD3c` |
-| Magic Eden V2                  | `M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K` |
-| Meteora DAMM v2                | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` |
-| Meteora DLMM                   | `LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo` |
-| Meteora Pools                  | `Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB` |
-| Meteora DBC: Pool Authority    | `FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM` |
-| Meteora Dynamic Bonding Curve  | `dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN` |
-| Moonshot                       | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
-| OpenBook                       | `srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX` |
-| Orca                           | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` |
-| Pump.fun                       | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` |
-| Pump.fun AMM                   | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` |
-| Pump.fun Fee Account           | `CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM` |
-| Pump.fun: Raydium Migration    | `39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg` |
-| Raydium CLMM                   | `CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK` |
-| Raydium CPMM                   | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` |
-| Raydium Launchpad              | `LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj` |
-| Raydium Launchpad Authority    | `WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh` |
-| Raydium Liquidity Pool V4      | `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8` |
-| SolFi                          | `SoLFiHG9TfgtdUXUjWAxi3LtvYuFyDLVhBWxdMZxyCe` |
-| Tensor cNFT                    | `TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp` |
-| Tensor Swap                    | `TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN` |
-| Vertigo                        | `vrTGoBuy5rYSxAfV3jaRJWHH6nN9WK4NRExGxsk1bCJ` |
+| Program Name                  | Program ID |
+|-------------------------------|---|
+| Fluxbeam                      | `FLUXubRmkEi2q6K3Y9kBPg9248ggaZVsoSFhtJHSrm1X` |
+| game.com                      | `GameEs6zXFFGhE5zCdx2sqeRZkL7uYzPsZuSVn1fdxHF` |
+| Helio Program 1               | `ENicYBBNZQ91toN7ggmTxnDGZW14uv9UkumN7XBGeYJ4` |
+| Jupiter Aggregator v6         | `JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4` |
+| Lifinity V2                   | `2wT8Yq49kHgDzXuPxZSaeLaH1qbmGXtEyPy64bL7aD3c` |
+| Magic Eden V2                 | `M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K` |
+| Meteora DAMM v2               | `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG` |
+| Meteora DLMM                  | `LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo` |
+| Meteora Pools                 | `Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB` |
+| Meteora DBC: Pool Authority   | `FhVo3mqL8PW5pH5U2CN4XE33DokiyZnUwuGpH2hmHLuM` |
+| Meteora Dynamic Bonding Curve | `dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN` |
+| Moonshot                      | `MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG` |
+| OpenBook                      | `srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX` |
+| Orca                          | `whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc` |
+| Pump.fun                      | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` |
+| Pump.fun AMM                  | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` |
+| Pump.fun Fee Account          | `CebN5WGQ4jvEPvsVU4EoHEpgzq1VV7AbicfhtW4xC9iM` |
+| Pump.fun: Raydium Migration   | `39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg` |
+| Raydium CLMM                  | `CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK` |
+| Raydium CPMM                  | `CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C` |
+| Raydium Launchpad             | `LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj` |
+| Raydium Launchpad Authority   | `WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh` |
+| Raydium Liquidity Pool V4     | `675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8` |
+| SolFi                         | `SoLFiHG9TfgtdUXUjWAxi3LtvYuFyDLVhBWxdMZxyCe` |
+| Tensor cNFT                   | `TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp` |
+| Tensor Swap                   | `TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN` |
+| Vertigo                       | `vrTGoBuy5rYSxAfV3jaRJWHH6nN9WK4NRExGxsk1bCJ` |
 
 
 *Note: Feel free to ask for any missing or requested program IDs.*
@@ -145,16 +141,6 @@ message SubscribeAccountsRequest {
     - Block finality monitoring
     - Network health checks
 
-#### 4. SubscribeToWalletTransactions
-- **Purpose**: Stream transactions for specific wallet addresses
-- **Input**: SubscribeWalletRequest with array of wallet addresses
-- **Output**: Stream of StreamResponse messages containing transaction data
-- **Limitations**: Maximum 10 wallet addresses per subscription
-- **Use cases**:
-    - Portfolio tracking
-    - User activity monitoring
-    - Wallet analytics
-
 ## Message Structures
 
 ### Core Message Types
@@ -165,20 +151,8 @@ message MessageWrapper {
   oneof event_message {
     SubscribeUpdateAccountInfo account_update = 1;
     SlotStatusEvent slot = 2;
-    TransactionEventWrapper transaction = 3;
+    TransactionEvent transaction = 3;
   }
-}
-
-message TransactionEventWrapper {
-  StreamType stream_type = 1;
-  TransactionEvent transaction = 2;
-}
-
-enum StreamType {
-  STREAM_TYPE_UNSPECIFIED = 0;
-  STREAM_TYPE_FILTERED = 1;
-  STREAM_TYPE_WALLET = 2;
-  STREAM_TYPE_ACCOUNT = 3;
 }
 ```
 
@@ -325,17 +299,15 @@ metadata: {
     - Up to 2x Transaction Streams (`SubscribeToTransactions`)
     - Up to 5x Account Updates Streams (`SubscribeToAccountUpdates`)
     - Up to 2x Slot Status Streams (`SubscribeToSlotStatus`)
-    - Up to 10x Wallet Transactions Streams (`SubscribeToWalletTransactions`)
 
 ### Subscription Rules
 - Each client can maintain multiple active subscriptions of each type within limits
-- Maximum 10 wallet addresses per wallet subscription
 - Maximum 100 account addresses per account subscription
 - Total subscriptions across all types cannot exceed 6 per client
 - Account subscriptions can filter by:
-- Specific account addresses (up to 100 per subscription)
-- Owner program addresses (to monitor all accounts owned by those programs)
-- Both filters combined for targeted monitoring
+  - Specific account addresses (up to 100 per subscription)
+  - Owner program addresses (to monitor all accounts owned by those programs)
+  - Both filters combined for targeted monitoring
 
 ## Performance Requirements
 
@@ -398,9 +370,8 @@ class ThorClient:
 
     async def process_message(self, wrapper):
         if wrapper.HasField('transaction'):
-            tx_wrapper = wrapper.transaction
-            tx = tx_wrapper.transaction
-            print(f"Processing tx: {tx.signature.hex()}, type: {tx_wrapper.stream_type}")
+            tx = wrapper.transaction
+            print(f"Processing tx: {tx.signature.hex()}")
         elif wrapper.HasField('account_update'):
             account = wrapper.account_update
             print(f"Account update: {account.pubkey.hex()}")
@@ -501,10 +472,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 async fn process_message(wrapper: MessageWrapper) {
     match wrapper.event_message {
-        Some(thor_proto::message_wrapper::EventMessage::Transaction(tx_wrapper)) => {
-            let tx = tx_wrapper.transaction.unwrap();
-            println!("Processing tx: {:?}, type: {:?}", 
-                hex::encode(&tx.signature), tx_wrapper.stream_type);
+        Some(thor_proto::message_wrapper::EventMessage::Transaction(tx)) => {
+            println!("Processing tx: {:?}", hex::encode(&tx.signature));
         },
         Some(thor_proto::message_wrapper::EventMessage::AccountUpdate(account)) => {
             println!("Account update: {:?}", hex::encode(&account.pubkey));
@@ -583,7 +552,7 @@ client.subscribeAccountUpdates(undefined, ownerPrograms).catch(console.error);
 client.subscribeAccountUpdates(accounts, ownerPrograms).catch(console.error);
 ```
 
-### Go Example (EventPublisher - Wallet Transactions)
+### Go Example (EventPublisher - Account Updates)
 ```go
 package main
 
@@ -612,17 +581,18 @@ func NewThorClient(serverAddr, token string) (*ThorClient, error) {
     }, nil
 }
 
-func (c *ThorClient) SubscribeWalletTransactions(ctx context.Context, wallets []string) error {
+func (c *ThorClient) SubscribeAccountUpdates(ctx context.Context, accounts, owners []string) error {
     md := metadata.New(map[string]string{
         "authorization": c.token,
     })
     ctx = metadata.NewOutgoingContext(ctx, md)
 
-    request := &pb.SubscribeWalletRequest{
-        WalletAddress: wallets,
+    request := &pb.SubscribeAccountsRequest{
+        AccountAddress: accounts,
+        OwnerAddress:   owners,
     }
 
-    stream, err := c.client.SubscribeToWalletTransactions(ctx, request)
+    stream, err := c.client.SubscribeToAccountUpdates(ctx, request)
     if err != nil {
         return err
     }
@@ -635,16 +605,16 @@ func (c *ThorClient) SubscribeWalletTransactions(ctx context.Context, wallets []
 
         // Process asynchronously
         go func(data []byte) {
-            if err := c.processWalletTransaction(data); err != nil {
-                log.Printf("Error processing wallet tx: %v", err)
+            if err := c.processAccountUpdate(data); err != nil {
+                log.Printf("Error processing account update: %v", err)
             }
         }(response.Data)
     }
 }
 
-func (c *ThorClient) processWalletTransaction(data []byte) error {
-    log.Printf("Processing wallet transaction: %d bytes", len(data))
-    // Deserialize and process the transaction data
+func (c *ThorClient) processAccountUpdate(data []byte) error {
+    log.Printf("Processing account update: %d bytes", len(data))
+    // Deserialize and process the account data
     return nil
 }
 
@@ -654,13 +624,19 @@ func main() {
         log.Fatal(err)
     }
 
-    wallets := []string{
-        "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
-        "2ojv9BAiHUrvsm9gxDe7fJSzbNZSJcxZvf8dqmWGHG8S",
+    // Example 1: Monitor specific accounts
+    accounts := []string{
+        "11111111111111111111111111111112",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    }
+
+    // Example 2: Monitor all accounts owned by specific programs
+    owners := []string{
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
     }
 
     ctx := context.Background()
-    if err := client.SubscribeWalletTransactions(ctx, wallets); err != nil {
+    if err := client.SubscribeAccountUpdates(ctx, accounts, owners); err != nil {
         log.Fatal(err)
     }
 }
@@ -678,8 +654,6 @@ func main() {
 - `TRANSACTION_SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum transaction subscriptions (2)
 - `ACCOUNT_SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum account subscriptions (5)
 - `SLOT_SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum slot subscriptions (2)
-- `WALLET_SUBSCRIPTION_LIMIT_REACHED`: Client has reached maximum wallet subscriptions (10)
-- `TOO_MANY_WALLET_ADDRESSES`: Wallet subscription request exceeds maximum allowed addresses (10)
 - `TOO_MANY_ACCOUNT_ADDRESSES`: Account subscription request exceeds maximum allowed addresses (100)
 
 ### Connection Errors
@@ -691,9 +665,7 @@ func main() {
 ### Request Errors
 - `INVALID_REQUEST`: Malformed request
 - `INVALID_PROGRAM_ID`: Program ID format is incorrect
-- `INVALID_WALLET_ADDRESS`: Wallet address format is incorrect
 - `INVALID_ACCOUNT_ADDRESS`: Account address format is incorrect
-- `EMPTY_WALLET_LIST`: No wallet addresses provided in subscription request
 - `EMPTY_ACCOUNT_LIST`: No account addresses provided in subscription request
 
 ### Server Errors
@@ -725,15 +697,11 @@ func main() {
 ### Validation Errors (Check Input)
 - `INVALID_REQUEST`
 - `INVALID_PROGRAM_ID`
-- `INVALID_WALLET_ADDRESS`
 - `INVALID_ACCOUNT_ADDRESS`
 - `TRANSACTION_SUBSCRIPTION_LIMIT_REACHED`
 - `ACCOUNT_SUBSCRIPTION_LIMIT_REACHED`
 - `SLOT_SUBSCRIPTION_LIMIT_REACHED`
-- `WALLET_SUBSCRIPTION_LIMIT_REACHED`
-- `TOO_MANY_WALLET_ADDRESSES`
 - `TOO_MANY_ACCOUNT_ADDRESSES`
-- `EMPTY_WALLET_LIST`
 - `EMPTY_ACCOUNT_LIST`
 
 ### Data Handling Errors
@@ -810,11 +778,10 @@ func main() {
 
 4. **Message Processing**
     - Handle oneof fields properly in MessageWrapper
-    - Process different stream types (FILTERED, WALLET, ACCOUNT) appropriately
     - Implement proper error handling for message deserialization
 
 5. **Resource Management**
-    - Respect subscription limits (6 total: up to 2 transaction, 5 account, 2 slot, 10 wallet)
+    - Respect subscription limits (6 total: up to 2 transaction, 5 account, 2 slot)
     - Monitor your subscription usage across different event types
     - Close unused subscriptions to free resources for new ones
     - Monitor memory usage when processing high-volume streams

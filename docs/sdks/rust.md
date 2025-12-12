@@ -14,7 +14,7 @@ tokio = { version = "1", features = ["full"] }
 
 ## Quick Start
 
-```rust
+```rustf
 use thorstreamer_grpc_client::{ClientConfig, ThorClient, parse_message};
 use thorstreamer_grpc_client::proto::thor_streamer::types::message_wrapper::EventMessage;
 
@@ -31,10 +31,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     while let Some(response) = stream.message().await? {
         let msg = parse_message(&response.data)?;
-        if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-            if let Some(tx) = tx_wrapper.transaction {
-                println!("Transaction: slot={}", tx.slot);
-            }
+        if let Some(EventMessage::Transaction(tx)) = msg.event_message {
+            println!("Transaction: slot={}", tx.slot);
         }
     }
     Ok(())
@@ -67,14 +65,12 @@ let mut stream = client.subscribe_to_transactions().await?;
 
 while let Some(response) = stream.message().await? {
     let msg = parse_message(&response.data)?;
-    if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-        if let Some(tx) = tx_wrapper.transaction {
-            let sig_hex: String = tx.signature.iter()
-                .take(8)
-                .map(|b| format!("{:02x}", b))
-                .collect();
-            println!("Transaction: slot={}, sig={}", tx.slot, sig_hex);
-        }
+    if let Some(EventMessage::Transaction(tx)) = msg.event_message {
+        let sig_hex: String = tx.signature.iter()
+            .take(8)
+            .map(|b| format!("{:02x}", b))
+            .collect();
+        println!("Transaction: slot={}, sig={}", tx.slot, sig_hex);
     }
 }
 ```
@@ -89,26 +85,6 @@ while let Some(response) = stream.message().await? {
     if let Some(EventMessage::Slot(slot)) = msg.event_message {
         println!("Slot: {}, status={}, height={}",
             slot.slot, slot.status, slot.block_height);
-    }
-}
-```
-
-### subscribe_to_wallet_transactions
-
-Monitor up to 10 wallet addresses:
-
-```rust
-let wallets = vec![
-    "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM".to_string(),
-    "2ojv9BAiHUrvsm9gxDe7fJSzbNZSJcxZvf8dqmWGHG8S".to_string(),
-];
-
-let mut stream = client.subscribe_to_wallet_transactions(wallets).await?;
-
-while let Some(response) = stream.message().await? {
-    let msg = parse_message(&response.data)?;
-    if let Some(EventMessage::Transaction(tx_wrapper)) = msg.event_message {
-        println!("Wallet transaction received");
     }
 }
 ```

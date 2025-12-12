@@ -20,10 +20,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	EventPublisher_SubscribeToTransactions_FullMethodName       = "/publisher.EventPublisher/SubscribeToTransactions"
-	EventPublisher_SubscribeToSlotStatus_FullMethodName         = "/publisher.EventPublisher/SubscribeToSlotStatus"
-	EventPublisher_SubscribeToWalletTransactions_FullMethodName = "/publisher.EventPublisher/SubscribeToWalletTransactions"
-	EventPublisher_SubscribeToAccountUpdates_FullMethodName     = "/publisher.EventPublisher/SubscribeToAccountUpdates"
+	EventPublisher_SubscribeToTransactions_FullMethodName   = "/publisher.EventPublisher/SubscribeToTransactions"
+	EventPublisher_SubscribeToSlotStatus_FullMethodName     = "/publisher.EventPublisher/SubscribeToSlotStatus"
+	EventPublisher_SubscribeToAccountUpdates_FullMethodName = "/publisher.EventPublisher/SubscribeToAccountUpdates"
 )
 
 // EventPublisherClient is the client API for EventPublisher service.
@@ -32,8 +31,6 @@ const (
 type EventPublisherClient interface {
 	SubscribeToTransactions(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamResponse], error)
 	SubscribeToSlotStatus(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamResponse], error)
-	SubscribeToWalletTransactions(ctx context.Context, in *SubscribeWalletRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamResponse], error)
-	// NEW method to subscribe to account updates
 	SubscribeToAccountUpdates(ctx context.Context, in *SubscribeAccountsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamResponse], error)
 }
 
@@ -83,28 +80,9 @@ func (c *eventPublisherClient) SubscribeToSlotStatus(ctx context.Context, in *em
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type EventPublisher_SubscribeToSlotStatusClient = grpc.ServerStreamingClient[StreamResponse]
 
-func (c *eventPublisherClient) SubscribeToWalletTransactions(ctx context.Context, in *SubscribeWalletRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamResponse], error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &EventPublisher_ServiceDesc.Streams[2], EventPublisher_SubscribeToWalletTransactions_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &grpc.GenericClientStream[SubscribeWalletRequest, StreamResponse]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type EventPublisher_SubscribeToWalletTransactionsClient = grpc.ServerStreamingClient[StreamResponse]
-
 func (c *eventPublisherClient) SubscribeToAccountUpdates(ctx context.Context, in *SubscribeAccountsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &EventPublisher_ServiceDesc.Streams[3], EventPublisher_SubscribeToAccountUpdates_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &EventPublisher_ServiceDesc.Streams[2], EventPublisher_SubscribeToAccountUpdates_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -127,8 +105,6 @@ type EventPublisher_SubscribeToAccountUpdatesClient = grpc.ServerStreamingClient
 type EventPublisherServer interface {
 	SubscribeToTransactions(*emptypb.Empty, grpc.ServerStreamingServer[StreamResponse]) error
 	SubscribeToSlotStatus(*emptypb.Empty, grpc.ServerStreamingServer[StreamResponse]) error
-	SubscribeToWalletTransactions(*SubscribeWalletRequest, grpc.ServerStreamingServer[StreamResponse]) error
-	// NEW method to subscribe to account updates
 	SubscribeToAccountUpdates(*SubscribeAccountsRequest, grpc.ServerStreamingServer[StreamResponse]) error
 	mustEmbedUnimplementedEventPublisherServer()
 }
@@ -145,9 +121,6 @@ func (UnimplementedEventPublisherServer) SubscribeToTransactions(*emptypb.Empty,
 }
 func (UnimplementedEventPublisherServer) SubscribeToSlotStatus(*emptypb.Empty, grpc.ServerStreamingServer[StreamResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeToSlotStatus not implemented")
-}
-func (UnimplementedEventPublisherServer) SubscribeToWalletTransactions(*SubscribeWalletRequest, grpc.ServerStreamingServer[StreamResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeToWalletTransactions not implemented")
 }
 func (UnimplementedEventPublisherServer) SubscribeToAccountUpdates(*SubscribeAccountsRequest, grpc.ServerStreamingServer[StreamResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeToAccountUpdates not implemented")
@@ -195,17 +168,6 @@ func _EventPublisher_SubscribeToSlotStatus_Handler(srv interface{}, stream grpc.
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type EventPublisher_SubscribeToSlotStatusServer = grpc.ServerStreamingServer[StreamResponse]
 
-func _EventPublisher_SubscribeToWalletTransactions_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SubscribeWalletRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(EventPublisherServer).SubscribeToWalletTransactions(m, &grpc.GenericServerStream[SubscribeWalletRequest, StreamResponse]{ServerStream: stream})
-}
-
-// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type EventPublisher_SubscribeToWalletTransactionsServer = grpc.ServerStreamingServer[StreamResponse]
-
 func _EventPublisher_SubscribeToAccountUpdates_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SubscribeAccountsRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -233,11 +195,6 @@ var EventPublisher_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "SubscribeToSlotStatus",
 			Handler:       _EventPublisher_SubscribeToSlotStatus_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "SubscribeToWalletTransactions",
-			Handler:       _EventPublisher_SubscribeToWalletTransactions_Handler,
 			ServerStreams: true,
 		},
 		{

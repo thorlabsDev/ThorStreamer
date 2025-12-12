@@ -55,25 +55,3 @@ export namespace SubscribeAccountsRequest {
         ownerAddressList: Array<string>,
     }
 }
-
-export class SubscribeWalletRequest extends jspb.Message { 
-    clearWalletAddressList(): void;
-    getWalletAddressList(): Array<string>;
-    setWalletAddressList(value: Array<string>): SubscribeWalletRequest;
-    addWalletAddress(value: string, index?: number): string;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): SubscribeWalletRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: SubscribeWalletRequest): SubscribeWalletRequest.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: SubscribeWalletRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): SubscribeWalletRequest;
-    static deserializeBinaryFromReader(message: SubscribeWalletRequest, reader: jspb.BinaryReader): SubscribeWalletRequest;
-}
-
-export namespace SubscribeWalletRequest {
-    export type AsObject = {
-        walletAddressList: Array<string>,
-    }
-}

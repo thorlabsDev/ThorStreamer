@@ -22,7 +22,6 @@ Separate subscription methods for each event type with filtering options.
 service EventPublisher {
   rpc SubscribeToTransactions(Empty) returns (stream StreamResponse);
   rpc SubscribeToSlotStatus(Empty) returns (stream StreamResponse);
-  rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream StreamResponse);
   rpc SubscribeToAccountUpdates(SubscribeAccountsRequest) returns (stream StreamResponse);
 }
 ```

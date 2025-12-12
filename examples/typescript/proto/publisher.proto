@@ -11,18 +11,11 @@ message StreamResponse {
 }
 message SubscribeAccountsRequest {
   repeated string account_address = 1;
-  repeated string owner_address = 2;  // NEW: Filter by owner addresses
+  repeated string owner_address = 2;  // Filter by owner addresses
 }
 
 service EventPublisher {
   rpc SubscribeToTransactions(google.protobuf.Empty) returns (stream StreamResponse) {}
   rpc SubscribeToSlotStatus(google.protobuf.Empty) returns (stream StreamResponse) {}
-  rpc SubscribeToWalletTransactions(SubscribeWalletRequest) returns (stream StreamResponse) {}
-
-  // NEW method to subscribe to account updates
   rpc SubscribeToAccountUpdates(SubscribeAccountsRequest) returns (stream StreamResponse) {}
-}
-
-message SubscribeWalletRequest {
-  repeated string wallet_address = 1; // Array of Base58 encoded wallet addresses, max 10
 }

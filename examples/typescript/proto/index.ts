@@ -16,7 +16,6 @@ export * from './publisher_grpc_pb';
 
 // Named exports for convenience
 export const EventPublisherClient = publisher_grpc_pb.EventPublisherClient;
-export const SubscribeWalletRequest = publisher_pb.SubscribeWalletRequest;
 export const SubscribeAccountsRequest = publisher_pb.SubscribeAccountsRequest;
 export const StreamResponse = publisher_pb.StreamResponse;
 
@@ -27,7 +26,6 @@ export const SubscribeUpdateAccountInfo = events_pb.SubscribeUpdateAccountInfo;
 export const Message = events_pb.Message;
 export const MessageHeader = events_pb.MessageHeader;
 export const CompiledInstruction = events_pb.CompiledInstruction;
-export const TransactionEventWrapper = events_pb.TransactionEventWrapper;
 export const SlotStatus = events_pb.SlotStatus;
 export const SanitizedTransaction = events_pb.SanitizedTransaction;
 export const TransactionStatusMeta = events_pb.TransactionStatusMeta;
