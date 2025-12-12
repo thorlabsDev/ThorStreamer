@@ -8,7 +8,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-thorstreamer-grpc-client = "0.1.2"
+thorstreamer-grpc-client = "0.1.3"
 tokio = { version = "1", features = ["full"] }
 ```
 
@@ -216,7 +216,7 @@ cargo run --example subscribe
 ```toml
 [package]
 name = "thorstreamer-grpc-client"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 
 [dependencies]
@@ -238,6 +238,7 @@ The SDK uses `tonic-build` to generate Rust code from protobuf definitions at co
 
 ## Version History
 
+- `v0.1.3` - Updated README documentation
 - `v0.1.2` - Simplified proto schema, removed deprecated types
 - `v0.1.1` - Fixed repository link in crate metadata
 - `v0.1.0` - Initial release

@@ -1175,7 +1175,7 @@ dependencies = [
 
 [[package]]
 name = "thorstreamer-grpc-client"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "bs58",
  "chrono",
